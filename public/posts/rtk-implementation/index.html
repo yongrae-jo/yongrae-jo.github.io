@@ -1,375 +1,714 @@
-<!doctype html><html lang=ko-kr><head><meta charset=utf-8><meta http-equiv=X-UA-Compatible content="IE=edge,chrome=1"><title>RTK GPS 시스템 구현 가이드 | Yongrae Jo - Blog</title><meta name=viewport content="width=device-width,minimum-scale=1"><meta name=description content="RTK(Real-Time Kinematic) GPS 시스템의 구현 방법과 핵심 알고리즘에 대해 알아보겠습니다."><meta name=generator content="Hugo 0.147.8"><meta name=robots content="index, follow"><meta name=author content="Yongrae Jo"><link rel=stylesheet href=/ananke/css/main.min.8d048772ae72ab11245a0e296d1f2a36d3e3dd376c6c867394d6cc659c68fc37.css><link rel=canonical href=https://yongrae-jo.github.io/posts/rtk-implementation/><meta property="og:url" content="https://yongrae-jo.github.io/posts/rtk-implementation/"><meta property="og:site_name" content="Yongrae Jo - Blog"><meta property="og:title" content="RTK GPS 시스템 구현 가이드"><meta property="og:description" content="RTK(Real-Time Kinematic) GPS 시스템의 구현 방법과 핵심 알고리즘에 대해 알아보겠습니다."><meta property="og:locale" content="ko_kr"><meta property="og:type" content="article"><meta property="article:section" content="posts"><meta property="article:published_time" content="2025-06-11T09:15:00+09:00"><meta property="article:modified_time" content="2025-06-11T09:15:00+09:00"><meta property="article:tag" content="RTK"><meta property="article:tag" content="GPS"><meta property="article:tag" content="GNSS"><meta property="article:tag" content="고정밀측위"><meta property="article:tag" content="구현"><meta itemprop=name content="RTK GPS 시스템 구현 가이드"><meta itemprop=description content="RTK(Real-Time Kinematic) GPS 시스템의 구현 방법과 핵심 알고리즘에 대해 알아보겠습니다."><meta itemprop=datePublished content="2025-06-11T09:15:00+09:00"><meta itemprop=dateModified content="2025-06-11T09:15:00+09:00"><meta itemprop=wordCount content="1091"><meta itemprop=keywords content="RTK,GPS,GNSS,고정밀측위,구현"><meta name=twitter:card content="summary"><meta name=twitter:title content="RTK GPS 시스템 구현 가이드"><meta name=twitter:description content="RTK(Real-Time Kinematic) GPS 시스템의 구현 방법과 핵심 알고리즘에 대해 알아보겠습니다."></head><body class="ma0 avenir bg-near-white production"><header><div class=bg-black><nav class="pv3 ph3 ph4-ns" role=navigation><div class="flex-l center items-center justify-between"><a href=/ class="f3 fw2 hover-white white-90 dib no-underline">Yongrae Jo - Blog</a><div class="flex-l items-center"><ul class="pl0 mr3"><li class="list f5 f4-ns fw4 dib pr3"><a class="hover-white white-90 no-underline" href=/ title="Home page">Home</a></li><li class="list f5 f4-ns fw4 dib pr3"><a class="hover-white white-90 no-underline" href=/posts/ title="Posts page">Posts</a></li><li class="list f5 f4-ns fw4 dib pr3"><a class="hover-white white-90 no-underline" href=/about/ title="About page">About</a></li><li class="list f5 f4-ns fw4 dib pr3"><a class="hover-white white-90 no-underline" href=/about/ title="About page">About</a></li></ul><div class=ananke-socials></div></div></div></nav></div></header><main class=pb7 role=main><article class="flex-l mw8 center ph3 flex-wrap justify-between"><header class="mt4 w-100"><aside class="instapaper_ignoref b helvetica tracked ttu">Posts</aside><div id=sharing class="mt3 ananke-socials"></div><h1 class="f1 athelas mt3 mb1">RTK GPS 시스템 구현 가이드</h1><p class=tracked><strong>Yongrae Jo</strong></p><time class="f6 mv4 dib tracked" datetime=2025-06-11T09:15:00+09:00>June 11, 2025</time>
-<span class="f6 mv4 dib tracked">- 6 minutes read </span><span class="f6 mv4 dib tracked">- 1091 words</span></header><div class="nested-copy-line-height lh-copy serif f4 nested-links mid-gray pr4-l w-two-thirds-l"><h1 id=rtk-gps-시스템-구현-가이드>RTK GPS 시스템 구현 가이드</h1><p>RTK(Real-Time Kinematic) GPS는 센티미터급 정확도를 제공하는 고정밀 측위 기술입니다.
-이번 포스트에서는 RTK 시스템의 구현 방법과 핵심 알고리즘에 대해 자세히 다뤄보겠습니다.</p><h2 id=-rtk란-무엇인가>▶ RTK란 무엇인가?</h2><p>RTK는 기준국(Base Station)과 이동국(Rover) 간의 반송파 위상 관측치를 실시간으로 차분하여
-센티미터급 정확도를 달성하는 고정밀 GNSS 측위 기법입니다.</p><h3 id=rtk의-장점>RTK의 장점</h3><ul><li><strong>높은 정확도</strong>: 수평 1-3cm, 수직 2-5cm</li><li><strong>실시간 처리</strong>: 초 단위 내 해 제공</li><li><strong>상대 측위</strong>: 기준국 대비 상대 위치 결정</li></ul><h2 id=-rtk-시스템-구성>◆ RTK 시스템 구성</h2><h3 id=1-하드웨어-구성>1. 하드웨어 구성</h3><div class=highlight><div style=background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4><table style=border-spacing:0;padding:0;margin:0;border:0><tr><td style=vertical-align:top;padding:0;margin:0;border:0><pre tabindex=0 style=background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f">1
-</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f">2
-</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f">3
-</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f">4
-</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f">5
-</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f">6
-</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f">7
-</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f">8
-</span></code></pre></td><td style=vertical-align:top;padding:0;margin:0;border:0;width:100%><pre tabindex=0 style=background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-text data-lang=text><span style=display:flex><span>┌─────────────┐     ┌─────────────┐
-</span></span><span style=display:flex><span>│ 기준국      │────▶│ 이동국      │
-</span></span><span style=display:flex><span>│ (Base)      │ RTK │ (Rover)     │
-</span></span><span style=display:flex><span>│             │보정 │             │
-</span></span><span style=display:flex><span>│ • GNSS 수신기│데이터│ • GNSS 수신기│
-</span></span><span style=display:flex><span>│ • 통신 장비 │     │ • 통신 장비 │
-</span></span><span style=display:flex><span>│ • 안테나    │     │ • 안테나    │
-</span></span><span style=display:flex><span>└─────────────┘     └─────────────┘
-</span></span></code></pre></td></tr></table></div></div><h3 id=2-소프트웨어-구성>2. 소프트웨어 구성</h3><div class=highlight><div style=background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4><table style=border-spacing:0;padding:0;margin:0;border:0><tr><td style=vertical-align:top;padding:0;margin:0;border:0><pre tabindex=0 style=background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f">1
-</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f">2
-</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f">3
-</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f">4
-</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f">5
-</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f">6
-</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f">7
-</span></code></pre></td><td style=vertical-align:top;padding:0;margin:0;border:0;width:100%><pre tabindex=0 style=background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-c data-lang=c><span style=display:flex><span><span style=color:#57606a>// RTK 시스템 주요 모듈
-</span></span></span><span style=display:flex><span><span style=color:#57606a></span><span style=color:#cf222e>typedef</span> <span style=color:#cf222e>struct</span> <span style=color:#1f2328>{</span>
-</span></span><span style=display:flex><span>    <span style=color:#cf222e>gnss_obs_t</span> base_obs<span style=color:#1f2328>[</span>MAX_SAT<span style=color:#1f2328>];</span>     <span style=color:#57606a>// 기준국 관측치
-</span></span></span><span style=display:flex><span><span style=color:#57606a></span>    <span style=color:#cf222e>gnss_obs_t</span> rover_obs<span style=color:#1f2328>[</span>MAX_SAT<span style=color:#1f2328>];</span>    <span style=color:#57606a>// 이동국 관측치
-</span></span></span><span style=display:flex><span><span style=color:#57606a></span>    <span style=color:#cf222e>nav_t</span> navigation<span style=color:#1f2328>;</span>                 <span style=color:#57606a>// 항법 메시지
-</span></span></span><span style=display:flex><span><span style=color:#57606a></span>    <span style=color:#cf222e>rtk_sol_t</span> solution<span style=color:#1f2328>;</span>              <span style=color:#57606a>// RTK 해
-</span></span></span><span style=display:flex><span><span style=color:#57606a></span><span style=color:#1f2328>}</span> <span style=color:#cf222e>rtk_system_t</span><span style=color:#1f2328>;</span>
-</span></span></code></pre></td></tr></table></div></div><h2 id=-rtk-알고리즘-구현>◆ RTK 알고리즘 구현</h2><h3 id=1-이중차분double-difference-계산>1. 이중차분(Double Difference) 계산</h3><p>RTK의 핵심은 이중차분 관측치를 통한 오차 제거입니다.</p><div class=highlight><div style=background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4><table style=border-spacing:0;padding:0;margin:0;border:0><tr><td style=vertical-align:top;padding:0;margin:0;border:0><pre tabindex=0 style=background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f"> 1
-</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f"> 2
-</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f"> 3
-</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f"> 4
-</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f"> 5
-</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f"> 6
-</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f"> 7
-</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f"> 8
-</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f"> 9
-</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f">10
-</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f">11
-</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f">12
-</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f">13
-</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f">14
-</span></code></pre></td><td style=vertical-align:top;padding:0;margin:0;border:0;width:100%><pre tabindex=0 style=background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-c data-lang=c><span style=display:flex><span><span style=color:#cf222e>double</span> <span style=color:#6639ba>calculate_double_difference</span><span style=color:#1f2328>(</span><span style=color:#cf222e>gnss_obs_t</span><span style=color:#0550ae>*</span> base<span style=color:#1f2328>,</span> <span style=color:#cf222e>gnss_obs_t</span><span style=color:#0550ae>*</span> rover<span style=color:#1f2328>,</span>
-</span></span><span style=display:flex><span>                                 <span style=color:#cf222e>int</span> sat1<span style=color:#1f2328>,</span> <span style=color:#cf222e>int</span> sat2<span style=color:#1f2328>,</span> <span style=color:#cf222e>int</span> freq<span style=color:#1f2328>)</span> <span style=color:#1f2328>{</span>
-</span></span><span style=display:flex><span>    <span style=color:#cf222e>double</span> dd_code<span style=color:#1f2328>,</span> dd_phase<span style=color:#1f2328>;</span>
-</span></span><span style=display:flex><span>    
-</span></span><span style=display:flex><span>    <span style=color:#57606a>// 이중차분 코드 관측치
-</span></span></span><span style=display:flex><span><span style=color:#57606a></span>    dd_code <span style=color:#0550ae>=</span> <span style=color:#1f2328>(</span>rover<span style=color:#1f2328>[</span>sat1<span style=color:#1f2328>].</span>P<span style=color:#1f2328>[</span>freq<span style=color:#1f2328>]</span> <span style=color:#0550ae>-</span> rover<span style=color:#1f2328>[</span>sat2<span style=color:#1f2328>].</span>P<span style=color:#1f2328>[</span>freq<span style=color:#1f2328>])</span> <span style=color:#0550ae>-</span> 
-</span></span><span style=display:flex><span>              <span style=color:#1f2328>(</span>base<span style=color:#1f2328>[</span>sat1<span style=color:#1f2328>].</span>P<span style=color:#1f2328>[</span>freq<span style=color:#1f2328>]</span> <span style=color:#0550ae>-</span> base<span style=color:#1f2328>[</span>sat2<span style=color:#1f2328>].</span>P<span style=color:#1f2328>[</span>freq<span style=color:#1f2328>]);</span>
-</span></span><span style=display:flex><span>    
-</span></span><span style=display:flex><span>    <span style=color:#57606a>// 이중차분 반송파 위상 관측치  
-</span></span></span><span style=display:flex><span><span style=color:#57606a></span>    dd_phase <span style=color:#0550ae>=</span> <span style=color:#1f2328>(</span>rover<span style=color:#1f2328>[</span>sat1<span style=color:#1f2328>].</span>L<span style=color:#1f2328>[</span>freq<span style=color:#1f2328>]</span> <span style=color:#0550ae>-</span> rover<span style=color:#1f2328>[</span>sat2<span style=color:#1f2328>].</span>L<span style=color:#1f2328>[</span>freq<span style=color:#1f2328>])</span> <span style=color:#0550ae>-</span> 
-</span></span><span style=display:flex><span>               <span style=color:#1f2328>(</span>base<span style=color:#1f2328>[</span>sat1<span style=color:#1f2328>].</span>L<span style=color:#1f2328>[</span>freq<span style=color:#1f2328>]</span> <span style=color:#0550ae>-</span> base<span style=color:#1f2328>[</span>sat2<span style=color:#1f2328>].</span>L<span style=color:#1f2328>[</span>freq<span style=color:#1f2328>]);</span>
-</span></span><span style=display:flex><span>    
-</span></span><span style=display:flex><span>    <span style=color:#cf222e>return</span> dd_phase<span style=color:#1f2328>;</span>
-</span></span><span style=display:flex><span><span style=color:#1f2328>}</span>
-</span></span></code></pre></td></tr></table></div></div><h3 id=2-정수-미지수integer-ambiguity-결정>2. 정수 미지수(Integer Ambiguity) 결정</h3><div class=highlight><div style=background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4><table style=border-spacing:0;padding:0;margin:0;border:0><tr><td style=vertical-align:top;padding:0;margin:0;border:0><pre tabindex=0 style=background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f"> 1
-</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f"> 2
-</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f"> 3
-</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f"> 4
-</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f"> 5
-</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f"> 6
-</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f"> 7
-</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f"> 8
-</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f"> 9
-</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f">10
-</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f">11
-</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f">12
-</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f">13
-</span></code></pre></td><td style=vertical-align:top;padding:0;margin:0;border:0;width:100%><pre tabindex=0 style=background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-c data-lang=c><span style=display:flex><span><span style=color:#cf222e>int</span> <span style=color:#6639ba>resolve_ambiguity</span><span style=color:#1f2328>(</span><span style=color:#cf222e>rtk_system_t</span><span style=color:#0550ae>*</span> rtk<span style=color:#1f2328>,</span> <span style=color:#cf222e>double</span><span style=color:#0550ae>*</span> float_amb<span style=color:#1f2328>,</span> <span style=color:#cf222e>int</span><span style=color:#0550ae>*</span> fixed_amb<span style=color:#1f2328>)</span> <span style=color:#1f2328>{</span>
-</span></span><span style=display:flex><span>    <span style=color:#cf222e>double</span> ratio_threshold <span style=color:#0550ae>=</span> <span style=color:#0550ae>3.0</span><span style=color:#1f2328>;</span>
-</span></span><span style=display:flex><span>    <span style=color:#cf222e>double</span> ratio<span style=color:#1f2328>;</span>
-</span></span><span style=display:flex><span>    
-</span></span><span style=display:flex><span>    <span style=color:#57606a>// LAMBDA 방법 또는 MLAMBDA 적용
-</span></span></span><span style=display:flex><span><span style=color:#57606a></span>    ratio <span style=color:#0550ae>=</span> <span style=color:#6639ba>lambda_search</span><span style=color:#1f2328>(</span>float_amb<span style=color:#1f2328>,</span> fixed_amb<span style=color:#1f2328>,</span> rtk<span style=color:#0550ae>-&gt;</span>num_amb<span style=color:#1f2328>);</span>
-</span></span><span style=display:flex><span>    
-</span></span><span style=display:flex><span>    <span style=color:#cf222e>if</span> <span style=color:#1f2328>(</span>ratio <span style=color:#0550ae>&gt;</span> ratio_threshold<span style=color:#1f2328>)</span> <span style=color:#1f2328>{</span>
-</span></span><span style=display:flex><span>        <span style=color:#cf222e>return</span> RTK_FIXED<span style=color:#1f2328>;</span>  <span style=color:#57606a>// Fixed 해
-</span></span></span><span style=display:flex><span><span style=color:#57606a></span>    <span style=color:#1f2328>}</span> <span style=color:#cf222e>else</span> <span style=color:#1f2328>{</span>
-</span></span><span style=display:flex><span>        <span style=color:#cf222e>return</span> RTK_FLOAT<span style=color:#1f2328>;</span>  <span style=color:#57606a>// Float 해
-</span></span></span><span style=display:flex><span><span style=color:#57606a></span>    <span style=color:#1f2328>}</span>
-</span></span><span style=display:flex><span><span style=color:#1f2328>}</span>
-</span></span></code></pre></td></tr></table></div></div><h3 id=3-칼만-필터-적용>3. 칼만 필터 적용</h3><div class=highlight><div style=background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4><table style=border-spacing:0;padding:0;margin:0;border:0><tr><td style=vertical-align:top;padding:0;margin:0;border:0><pre tabindex=0 style=background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f"> 1
-</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f"> 2
-</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f"> 3
-</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f"> 4
-</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f"> 5
-</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f"> 6
-</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f"> 7
-</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f"> 8
-</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f"> 9
-</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f">10
-</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f">11
-</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f">12
-</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f">13
-</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f">14
-</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f">15
-</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f">16
-</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f">17
-</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f">18
-</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f">19
-</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f">20
-</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f">21
-</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f">22
-</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f">23
-</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f">24
-</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f">25
-</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f">26
-</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f">27
-</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f">28
-</span></code></pre></td><td style=vertical-align:top;padding:0;margin:0;border:0;width:100%><pre tabindex=0 style=background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-c data-lang=c><span style=display:flex><span><span style=color:#cf222e>typedef</span> <span style=color:#cf222e>struct</span> <span style=color:#1f2328>{</span>
-</span></span><span style=display:flex><span>    <span style=color:#cf222e>double</span> x<span style=color:#1f2328>[</span>RTK_STATE_SIZE<span style=color:#1f2328>];</span>     <span style=color:#57606a>// 상태 벡터
-</span></span></span><span style=display:flex><span><span style=color:#57606a></span>    <span style=color:#cf222e>double</span> P<span style=color:#1f2328>[</span>RTK_STATE_SIZE <span style=color:#0550ae>*</span> RTK_STATE_SIZE<span style=color:#1f2328>];</span> <span style=color:#57606a>// 공분산 행렬
-</span></span></span><span style=display:flex><span><span style=color:#57606a></span>    <span style=color:#cf222e>double</span> Q<span style=color:#1f2328>[</span>RTK_STATE_SIZE <span style=color:#0550ae>*</span> RTK_STATE_SIZE<span style=color:#1f2328>];</span> <span style=color:#57606a>// 시스템 노이즈
-</span></span></span><span style=display:flex><span><span style=color:#57606a></span>    <span style=color:#cf222e>double</span> R<span style=color:#1f2328>[</span>MAX_OBS<span style=color:#1f2328>];</span>            <span style=color:#57606a>// 관측 노이즈
-</span></span></span><span style=display:flex><span><span style=color:#57606a></span><span style=color:#1f2328>}</span> <span style=color:#cf222e>kalman_filter_t</span><span style=color:#1f2328>;</span>
-</span></span><span style=display:flex><span>
-</span></span><span style=display:flex><span><span style=color:#cf222e>int</span> <span style=color:#6639ba>rtk_kalman_update</span><span style=color:#1f2328>(</span><span style=color:#cf222e>kalman_filter_t</span><span style=color:#0550ae>*</span> kf<span style=color:#1f2328>,</span> <span style=color:#cf222e>double</span><span style=color:#0550ae>*</span> obs<span style=color:#1f2328>,</span> <span style=color:#cf222e>double</span><span style=color:#0550ae>*</span> H<span style=color:#1f2328>)</span> <span style=color:#1f2328>{</span>
-</span></span><span style=display:flex><span>    <span style=color:#57606a>// 예측 단계
-</span></span></span><span style=display:flex><span><span style=color:#57606a></span>    <span style=color:#6639ba>matrix_multiply</span><span style=color:#1f2328>(</span>kf<span style=color:#0550ae>-&gt;</span>F<span style=color:#1f2328>,</span> kf<span style=color:#0550ae>-&gt;</span>x<span style=color:#1f2328>,</span> kf<span style=color:#0550ae>-&gt;</span>x_pred<span style=color:#1f2328>);</span>
-</span></span><span style=display:flex><span>    
-</span></span><span style=display:flex><span>    <span style=color:#57606a>// 업데이트 단계  
-</span></span></span><span style=display:flex><span><span style=color:#57606a></span>    <span style=color:#6639ba>matrix_multiply</span><span style=color:#1f2328>(</span>H<span style=color:#1f2328>,</span> kf<span style=color:#0550ae>-&gt;</span>P_pred<span style=color:#1f2328>,</span> HP<span style=color:#1f2328>);</span>
-</span></span><span style=display:flex><span>    <span style=color:#6639ba>matrix_multiply</span><span style=color:#1f2328>(</span>HP<span style=color:#1f2328>,</span> H_T<span style=color:#1f2328>,</span> S<span style=color:#1f2328>);</span>
-</span></span><span style=display:flex><span>    <span style=color:#6639ba>matrix_add</span><span style=color:#1f2328>(</span>S<span style=color:#1f2328>,</span> kf<span style=color:#0550ae>-&gt;</span>R<span style=color:#1f2328>,</span> S<span style=color:#1f2328>);</span>
-</span></span><span style=display:flex><span>    
-</span></span><span style=display:flex><span>    <span style=color:#57606a>// 칼만 이득 계산
-</span></span></span><span style=display:flex><span><span style=color:#57606a></span>    <span style=color:#6639ba>matrix_multiply</span><span style=color:#1f2328>(</span>kf<span style=color:#0550ae>-&gt;</span>P_pred<span style=color:#1f2328>,</span> H_T<span style=color:#1f2328>,</span> K_temp<span style=color:#1f2328>);</span>
-</span></span><span style=display:flex><span>    <span style=color:#6639ba>matrix_inverse</span><span style=color:#1f2328>(</span>S<span style=color:#1f2328>,</span> S_inv<span style=color:#1f2328>);</span>
-</span></span><span style=display:flex><span>    <span style=color:#6639ba>matrix_multiply</span><span style=color:#1f2328>(</span>K_temp<span style=color:#1f2328>,</span> S_inv<span style=color:#1f2328>,</span> K<span style=color:#1f2328>);</span>
-</span></span><span style=display:flex><span>    
-</span></span><span style=display:flex><span>    <span style=color:#57606a>// 상태 업데이트
-</span></span></span><span style=display:flex><span><span style=color:#57606a></span>    <span style=color:#6639ba>matrix_subtract</span><span style=color:#1f2328>(</span>obs<span style=color:#1f2328>,</span> h_x<span style=color:#1f2328>,</span> innovation<span style=color:#1f2328>);</span>
-</span></span><span style=display:flex><span>    <span style=color:#6639ba>matrix_multiply</span><span style=color:#1f2328>(</span>K<span style=color:#1f2328>,</span> innovation<span style=color:#1f2328>,</span> K_innov<span style=color:#1f2328>);</span>
-</span></span><span style=display:flex><span>    <span style=color:#6639ba>matrix_add</span><span style=color:#1f2328>(</span>kf<span style=color:#0550ae>-&gt;</span>x_pred<span style=color:#1f2328>,</span> K_innov<span style=color:#1f2328>,</span> kf<span style=color:#0550ae>-&gt;</span>x<span style=color:#1f2328>);</span>
-</span></span><span style=display:flex><span>    
-</span></span><span style=display:flex><span>    <span style=color:#cf222e>return</span> <span style=color:#0550ae>0</span><span style=color:#1f2328>;</span>
-</span></span><span style=display:flex><span><span style=color:#1f2328>}</span>
-</span></span></code></pre></td></tr></table></div></div><h2 id=-실시간-데이터-처리>◆ 실시간 데이터 처리</h2><h3 id=1-rtcm-메시지-처리>1. RTCM 메시지 처리</h3><div class=highlight><div style=background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4><table style=border-spacing:0;padding:0;margin:0;border:0><tr><td style=vertical-align:top;padding:0;margin:0;border:0><pre tabindex=0 style=background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f"> 1
-</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f"> 2
-</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f"> 3
-</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f"> 4
-</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f"> 5
-</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f"> 6
-</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f"> 7
-</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f"> 8
-</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f"> 9
-</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f">10
-</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f">11
-</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f">12
-</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f">13
-</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f">14
-</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f">15
-</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f">16
-</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f">17
-</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f">18
-</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f">19
-</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f">20
-</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f">21
-</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f">22
-</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f">23
-</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f">24
-</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f">25
-</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f">26
-</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f">27
-</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f">28
-</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f">29
-</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f">30
-</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f">31
-</span></code></pre></td><td style=vertical-align:top;padding:0;margin:0;border:0;width:100%><pre tabindex=0 style=background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-c data-lang=c><span style=display:flex><span><span style=color:#cf222e>typedef</span> <span style=color:#cf222e>struct</span> <span style=color:#1f2328>{</span>
-</span></span><span style=display:flex><span>    <span style=color:#cf222e>int</span> type<span style=color:#1f2328>;</span>                    <span style=color:#57606a>// 메시지 타입
-</span></span></span><span style=display:flex><span><span style=color:#57606a></span>    <span style=color:#cf222e>int</span> station_id<span style=color:#1f2328>;</span>             <span style=color:#57606a>// 기준국 ID
-</span></span></span><span style=display:flex><span><span style=color:#57606a></span>    <span style=color:#cf222e>double</span> tow<span style=color:#1f2328>;</span>                 <span style=color:#57606a>// GPS 주시간
-</span></span></span><span style=display:flex><span><span style=color:#57606a></span>    <span style=color:#cf222e>gnss_obs_t</span> obs<span style=color:#1f2328>[</span>MAX_SAT<span style=color:#1f2328>];</span>    <span style=color:#57606a>// 관측치 데이터
-</span></span></span><span style=display:flex><span><span style=color:#57606a></span><span style=color:#1f2328>}</span> <span style=color:#cf222e>rtcm_msg_t</span><span style=color:#1f2328>;</span>
-</span></span><span style=display:flex><span>
-</span></span><span style=display:flex><span><span style=color:#cf222e>int</span> <span style=color:#6639ba>decode_rtcm3</span><span style=color:#1f2328>(</span><span style=color:#cf222e>unsigned</span> <span style=color:#cf222e>char</span><span style=color:#0550ae>*</span> data<span style=color:#1f2328>,</span> <span style=color:#cf222e>int</span> len<span style=color:#1f2328>,</span> <span style=color:#cf222e>rtcm_msg_t</span><span style=color:#0550ae>*</span> msg<span style=color:#1f2328>)</span> <span style=color:#1f2328>{</span>
-</span></span><span style=display:flex><span>    <span style=color:#cf222e>int</span> pos <span style=color:#0550ae>=</span> <span style=color:#0550ae>0</span><span style=color:#1f2328>;</span>
-</span></span><span style=display:flex><span>    
-</span></span><span style=display:flex><span>    <span style=color:#57606a>// 프리앰블 확인 (0xD3)
-</span></span></span><span style=display:flex><span><span style=color:#57606a></span>    <span style=color:#cf222e>if</span> <span style=color:#1f2328>(</span>data<span style=color:#1f2328>[</span>pos<span style=color:#1f2328>]</span> <span style=color:#0550ae>!=</span> <span style=color:#0550ae>0xD3</span><span style=color:#1f2328>)</span> <span style=color:#cf222e>return</span> <span style=color:#0550ae>-</span><span style=color:#0550ae>1</span><span style=color:#1f2328>;</span>
-</span></span><span style=display:flex><span>    pos<span style=color:#0550ae>++</span><span style=color:#1f2328>;</span>
-</span></span><span style=display:flex><span>    
-</span></span><span style=display:flex><span>    <span style=color:#57606a>// 메시지 길이
-</span></span></span><span style=display:flex><span><span style=color:#57606a></span>    <span style=color:#cf222e>int</span> msg_len <span style=color:#0550ae>=</span> <span style=color:#6639ba>getbitu</span><span style=color:#1f2328>(</span>data<span style=color:#1f2328>,</span> pos<span style=color:#1f2328>,</span> <span style=color:#0550ae>10</span><span style=color:#1f2328>);</span>
-</span></span><span style=display:flex><span>    pos <span style=color:#0550ae>+=</span> <span style=color:#0550ae>10</span><span style=color:#1f2328>;</span>
-</span></span><span style=display:flex><span>    
-</span></span><span style=display:flex><span>    <span style=color:#57606a>// 메시지 타입
-</span></span></span><span style=display:flex><span><span style=color:#57606a></span>    msg<span style=color:#0550ae>-&gt;</span>type <span style=color:#0550ae>=</span> <span style=color:#6639ba>getbitu</span><span style=color:#1f2328>(</span>data<span style=color:#1f2328>,</span> pos<span style=color:#1f2328>,</span> <span style=color:#0550ae>12</span><span style=color:#1f2328>);</span>
-</span></span><span style=display:flex><span>    pos <span style=color:#0550ae>+=</span> <span style=color:#0550ae>12</span><span style=color:#1f2328>;</span>
-</span></span><span style=display:flex><span>    
-</span></span><span style=display:flex><span>    <span style=color:#cf222e>switch</span><span style=color:#1f2328>(</span>msg<span style=color:#0550ae>-&gt;</span>type<span style=color:#1f2328>)</span> <span style=color:#1f2328>{</span>
-</span></span><span style=display:flex><span>        <span style=color:#cf222e>case</span> <span style=color:#0550ae>1004</span><span style=color:#0550ae>:</span> <span style=color:#57606a>// GPS 관측치
-</span></span></span><span style=display:flex><span><span style=color:#57606a></span>            <span style=color:#cf222e>return</span> <span style=color:#6639ba>decode_rtcm3_1004</span><span style=color:#1f2328>(</span>data<span style=color:#1f2328>,</span> pos<span style=color:#1f2328>,</span> msg<span style=color:#1f2328>);</span>
-</span></span><span style=display:flex><span>        <span style=color:#cf222e>case</span> <span style=color:#0550ae>1012</span><span style=color:#0550ae>:</span> <span style=color:#57606a>// GLONASS 관측치  
-</span></span></span><span style=display:flex><span><span style=color:#57606a></span>            <span style=color:#cf222e>return</span> <span style=color:#6639ba>decode_rtcm3_1012</span><span style=color:#1f2328>(</span>data<span style=color:#1f2328>,</span> pos<span style=color:#1f2328>,</span> msg<span style=color:#1f2328>);</span>
-</span></span><span style=display:flex><span>        <span style=color:#cf222e>default</span><span style=color:#0550ae>:</span>
-</span></span><span style=display:flex><span>            <span style=color:#cf222e>return</span> <span style=color:#0550ae>-</span><span style=color:#0550ae>1</span><span style=color:#1f2328>;</span>
-</span></span><span style=display:flex><span>    <span style=color:#1f2328>}</span>
-</span></span><span style=display:flex><span><span style=color:#1f2328>}</span>
-</span></span></code></pre></td></tr></table></div></div><h3 id=2-통신-프로토콜-구현>2. 통신 프로토콜 구현</h3><div class=highlight><div style=background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4><table style=border-spacing:0;padding:0;margin:0;border:0><tr><td style=vertical-align:top;padding:0;margin:0;border:0><pre tabindex=0 style=background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f"> 1
-</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f"> 2
-</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f"> 3
-</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f"> 4
-</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f"> 5
-</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f"> 6
-</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f"> 7
-</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f"> 8
-</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f"> 9
-</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f">10
-</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f">11
-</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f">12
-</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f">13
-</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f">14
-</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f">15
-</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f">16
-</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f">17
-</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f">18
-</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f">19
-</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f">20
-</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f">21
-</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f">22
-</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f">23
-</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f">24
-</span></code></pre></td><td style=vertical-align:top;padding:0;margin:0;border:0;width:100%><pre tabindex=0 style=background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-c data-lang=c><span style=display:flex><span><span style=color:#cf222e>typedef</span> <span style=color:#cf222e>struct</span> <span style=color:#1f2328>{</span>
-</span></span><span style=display:flex><span>    <span style=color:#cf222e>int</span> socket<span style=color:#1f2328>;</span>                 <span style=color:#57606a>// 소켓 디스크립터
-</span></span></span><span style=display:flex><span><span style=color:#57606a></span>    <span style=color:#cf222e>char</span> ip<span style=color:#1f2328>[</span><span style=color:#0550ae>16</span><span style=color:#1f2328>];</span>               <span style=color:#57606a>// IP 주소
-</span></span></span><span style=display:flex><span><span style=color:#57606a></span>    <span style=color:#cf222e>int</span> port<span style=color:#1f2328>;</span>                  <span style=color:#57606a>// 포트 번호
-</span></span></span><span style=display:flex><span><span style=color:#57606a></span>    <span style=color:#cf222e>pthread_t</span> recv_thread<span style=color:#1f2328>;</span>     <span style=color:#57606a>// 수신 스레드
-</span></span></span><span style=display:flex><span><span style=color:#57606a></span><span style=color:#1f2328>}</span> <span style=color:#cf222e>comm_channel_t</span><span style=color:#1f2328>;</span>
-</span></span><span style=display:flex><span>
-</span></span><span style=display:flex><span><span style=color:#cf222e>void</span><span style=color:#0550ae>*</span> <span style=color:#6639ba>rtk_recv_thread</span><span style=color:#1f2328>(</span><span style=color:#cf222e>void</span><span style=color:#0550ae>*</span> arg<span style=color:#1f2328>)</span> <span style=color:#1f2328>{</span>
-</span></span><span style=display:flex><span>    <span style=color:#cf222e>comm_channel_t</span><span style=color:#0550ae>*</span> comm <span style=color:#0550ae>=</span> <span style=color:#1f2328>(</span><span style=color:#cf222e>comm_channel_t</span><span style=color:#0550ae>*</span><span style=color:#1f2328>)</span>arg<span style=color:#1f2328>;</span>
-</span></span><span style=display:flex><span>    <span style=color:#cf222e>unsigned</span> <span style=color:#cf222e>char</span> buffer<span style=color:#1f2328>[</span><span style=color:#0550ae>1024</span><span style=color:#1f2328>];</span>
-</span></span><span style=display:flex><span>    <span style=color:#cf222e>int</span> len<span style=color:#1f2328>;</span>
-</span></span><span style=display:flex><span>    
-</span></span><span style=display:flex><span>    <span style=color:#cf222e>while</span><span style=color:#1f2328>(</span><span style=color:#0550ae>1</span><span style=color:#1f2328>)</span> <span style=color:#1f2328>{</span>
-</span></span><span style=display:flex><span>        len <span style=color:#0550ae>=</span> <span style=color:#6639ba>recv</span><span style=color:#1f2328>(</span>comm<span style=color:#0550ae>-&gt;</span>socket<span style=color:#1f2328>,</span> buffer<span style=color:#1f2328>,</span> <span style=color:#cf222e>sizeof</span><span style=color:#1f2328>(</span>buffer<span style=color:#1f2328>),</span> <span style=color:#0550ae>0</span><span style=color:#1f2328>);</span>
-</span></span><span style=display:flex><span>        <span style=color:#cf222e>if</span> <span style=color:#1f2328>(</span>len <span style=color:#0550ae>&gt;</span> <span style=color:#0550ae>0</span><span style=color:#1f2328>)</span> <span style=color:#1f2328>{</span>
-</span></span><span style=display:flex><span>            <span style=color:#57606a>// RTCM 메시지 디코딩
-</span></span></span><span style=display:flex><span><span style=color:#57606a></span>            <span style=color:#cf222e>rtcm_msg_t</span> msg<span style=color:#1f2328>;</span>
-</span></span><span style=display:flex><span>            <span style=color:#cf222e>if</span> <span style=color:#1f2328>(</span><span style=color:#6639ba>decode_rtcm3</span><span style=color:#1f2328>(</span>buffer<span style=color:#1f2328>,</span> len<span style=color:#1f2328>,</span> <span style=color:#0550ae>&amp;</span>msg<span style=color:#1f2328>)</span> <span style=color:#0550ae>==</span> <span style=color:#0550ae>0</span><span style=color:#1f2328>)</span> <span style=color:#1f2328>{</span>
-</span></span><span style=display:flex><span>                <span style=color:#6639ba>process_rtk_observation</span><span style=color:#1f2328>(</span><span style=color:#0550ae>&amp;</span>msg<span style=color:#1f2328>);</span>
-</span></span><span style=display:flex><span>            <span style=color:#1f2328>}</span>
-</span></span><span style=display:flex><span>        <span style=color:#1f2328>}</span>
-</span></span><span style=display:flex><span>    <span style=color:#1f2328>}</span>
-</span></span><span style=display:flex><span>    <span style=color:#cf222e>return</span> <span style=color:#6639ba>NULL</span><span style=color:#1f2328>;</span>
-</span></span><span style=display:flex><span><span style=color:#1f2328>}</span>
-</span></span></code></pre></td></tr></table></div></div><h2 id=-성능-최적화-기법>◆ 성능 최적화 기법</h2><h3 id=1-위성-선택-알고리즘>1. 위성 선택 알고리즘</h3><div class=highlight><div style=background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4><table style=border-spacing:0;padding:0;margin:0;border:0><tr><td style=vertical-align:top;padding:0;margin:0;border:0><pre tabindex=0 style=background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f"> 1
-</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f"> 2
-</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f"> 3
-</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f"> 4
-</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f"> 5
-</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f"> 6
-</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f"> 7
-</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f"> 8
-</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f"> 9
-</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f">10
-</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f">11
-</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f">12
-</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f">13
-</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f">14
-</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f">15
-</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f">16
-</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f">17
-</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f">18
-</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f">19
-</span></code></pre></td><td style=vertical-align:top;padding:0;margin:0;border:0;width:100%><pre tabindex=0 style=background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-c data-lang=c><span style=display:flex><span><span style=color:#cf222e>int</span> <span style=color:#6639ba>select_satellites</span><span style=color:#1f2328>(</span><span style=color:#cf222e>gnss_obs_t</span><span style=color:#0550ae>*</span> obs<span style=color:#1f2328>,</span> <span style=color:#cf222e>int</span><span style=color:#0550ae>*</span> selected<span style=color:#1f2328>,</span> <span style=color:#cf222e>int</span> max_sat<span style=color:#1f2328>)</span> <span style=color:#1f2328>{</span>
-</span></span><span style=display:flex><span>    <span style=color:#cf222e>double</span> elevation<span style=color:#1f2328>[</span>MAX_SAT<span style=color:#1f2328>];</span>
-</span></span><span style=display:flex><span>    <span style=color:#cf222e>double</span> azimuth<span style=color:#1f2328>[</span>MAX_SAT<span style=color:#1f2328>];</span>
-</span></span><span style=display:flex><span>    <span style=color:#cf222e>int</span> count <span style=color:#0550ae>=</span> <span style=color:#0550ae>0</span><span style=color:#1f2328>;</span>
-</span></span><span style=display:flex><span>    
-</span></span><span style=display:flex><span>    <span style=color:#57606a>// 고도각 계산 및 마스크 적용
-</span></span></span><span style=display:flex><span><span style=color:#57606a></span>    <span style=color:#cf222e>for</span><span style=color:#1f2328>(</span><span style=color:#cf222e>int</span> i <span style=color:#0550ae>=</span> <span style=color:#0550ae>0</span><span style=color:#1f2328>;</span> i <span style=color:#0550ae>&lt;</span> MAX_SAT<span style=color:#1f2328>;</span> i<span style=color:#0550ae>++</span><span style=color:#1f2328>)</span> <span style=color:#1f2328>{</span>
-</span></span><span style=display:flex><span>        <span style=color:#cf222e>if</span><span style=color:#1f2328>(</span>obs<span style=color:#1f2328>[</span>i<span style=color:#1f2328>].</span>valid<span style=color:#1f2328>)</span> <span style=color:#1f2328>{</span>
-</span></span><span style=display:flex><span>            <span style=color:#6639ba>calc_elevation_azimuth</span><span style=color:#1f2328>(</span><span style=color:#0550ae>&amp;</span>obs<span style=color:#1f2328>[</span>i<span style=color:#1f2328>],</span> <span style=color:#0550ae>&amp;</span>elevation<span style=color:#1f2328>[</span>i<span style=color:#1f2328>],</span> <span style=color:#0550ae>&amp;</span>azimuth<span style=color:#1f2328>[</span>i<span style=color:#1f2328>]);</span>
-</span></span><span style=display:flex><span>            
-</span></span><span style=display:flex><span>            <span style=color:#cf222e>if</span><span style=color:#1f2328>(</span>elevation<span style=color:#1f2328>[</span>i<span style=color:#1f2328>]</span> <span style=color:#0550ae>&gt;</span> ELEVATION_MASK<span style=color:#1f2328>)</span> <span style=color:#1f2328>{</span>
-</span></span><span style=display:flex><span>                selected<span style=color:#1f2328>[</span>count<span style=color:#0550ae>++</span><span style=color:#1f2328>]</span> <span style=color:#0550ae>=</span> i<span style=color:#1f2328>;</span>
-</span></span><span style=display:flex><span>            <span style=color:#1f2328>}</span>
-</span></span><span style=display:flex><span>        <span style=color:#1f2328>}</span>
-</span></span><span style=display:flex><span>    <span style=color:#1f2328>}</span>
-</span></span><span style=display:flex><span>    
-</span></span><span style=display:flex><span>    <span style=color:#57606a>// GDOP를 고려한 최적 위성 조합 선택
-</span></span></span><span style=display:flex><span><span style=color:#57606a></span>    <span style=color:#cf222e>return</span> <span style=color:#6639ba>optimize_satellite_geometry</span><span style=color:#1f2328>(</span>selected<span style=color:#1f2328>,</span> count<span style=color:#1f2328>,</span> max_sat<span style=color:#1f2328>);</span>
-</span></span><span style=display:flex><span><span style=color:#1f2328>}</span>
-</span></span></code></pre></td></tr></table></div></div><h3 id=2-사이클-슬립-탐지>2. 사이클 슬립 탐지</h3><div class=highlight><div style=background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4><table style=border-spacing:0;padding:0;margin:0;border:0><tr><td style=vertical-align:top;padding:0;margin:0;border:0><pre tabindex=0 style=background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f"> 1
-</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f"> 2
-</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f"> 3
-</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f"> 4
-</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f"> 5
-</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f"> 6
-</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f"> 7
-</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f"> 8
-</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f"> 9
-</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f">10
-</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f">11
-</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f">12
-</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f">13
-</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f">14
-</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f">15
-</span></code></pre></td><td style=vertical-align:top;padding:0;margin:0;border:0;width:100%><pre tabindex=0 style=background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-c data-lang=c><span style=display:flex><span><span style=color:#cf222e>int</span> <span style=color:#6639ba>detect_cycle_slip</span><span style=color:#1f2328>(</span><span style=color:#cf222e>gnss_obs_t</span><span style=color:#0550ae>*</span> obs_prev<span style=color:#1f2328>,</span> <span style=color:#cf222e>gnss_obs_t</span><span style=color:#0550ae>*</span> obs_curr<span style=color:#1f2328>,</span> <span style=color:#cf222e>int</span> sat<span style=color:#1f2328>)</span> <span style=color:#1f2328>{</span>
-</span></span><span style=display:flex><span>    <span style=color:#cf222e>double</span> dt <span style=color:#0550ae>=</span> obs_curr<span style=color:#0550ae>-&gt;</span>time <span style=color:#0550ae>-</span> obs_prev<span style=color:#0550ae>-&gt;</span>time<span style=color:#1f2328>;</span>
-</span></span><span style=display:flex><span>    <span style=color:#cf222e>double</span> phase_diff <span style=color:#0550ae>=</span> obs_curr<span style=color:#0550ae>-&gt;</span>L<span style=color:#1f2328>[</span><span style=color:#0550ae>0</span><span style=color:#1f2328>]</span> <span style=color:#0550ae>-</span> obs_prev<span style=color:#0550ae>-&gt;</span>L<span style=color:#1f2328>[</span><span style=color:#0550ae>0</span><span style=color:#1f2328>];</span>
-</span></span><span style=display:flex><span>    <span style=color:#cf222e>double</span> code_diff <span style=color:#0550ae>=</span> obs_curr<span style=color:#0550ae>-&gt;</span>P<span style=color:#1f2328>[</span><span style=color:#0550ae>0</span><span style=color:#1f2328>]</span> <span style=color:#0550ae>-</span> obs_prev<span style=color:#0550ae>-&gt;</span>P<span style=color:#1f2328>[</span><span style=color:#0550ae>0</span><span style=color:#1f2328>];</span>
-</span></span><span style=display:flex><span>    
-</span></span><span style=display:flex><span>    <span style=color:#57606a>// GF(Geometry-Free) 조합 사용
-</span></span></span><span style=display:flex><span><span style=color:#57606a></span>    <span style=color:#cf222e>double</span> gf_diff <span style=color:#0550ae>=</span> <span style=color:#1f2328>(</span>obs_curr<span style=color:#0550ae>-&gt;</span>L<span style=color:#1f2328>[</span><span style=color:#0550ae>0</span><span style=color:#1f2328>]</span> <span style=color:#0550ae>-</span> obs_curr<span style=color:#0550ae>-&gt;</span>L<span style=color:#1f2328>[</span><span style=color:#0550ae>1</span><span style=color:#1f2328>])</span> <span style=color:#0550ae>-</span> 
-</span></span><span style=display:flex><span>                     <span style=color:#1f2328>(</span>obs_prev<span style=color:#0550ae>-&gt;</span>L<span style=color:#1f2328>[</span><span style=color:#0550ae>0</span><span style=color:#1f2328>]</span> <span style=color:#0550ae>-</span> obs_prev<span style=color:#0550ae>-&gt;</span>L<span style=color:#1f2328>[</span><span style=color:#0550ae>1</span><span style=color:#1f2328>]);</span>
-</span></span><span style=display:flex><span>    
-</span></span><span style=display:flex><span>    <span style=color:#cf222e>if</span><span style=color:#1f2328>(</span><span style=color:#6639ba>fabs</span><span style=color:#1f2328>(</span>gf_diff<span style=color:#1f2328>)</span> <span style=color:#0550ae>&gt;</span> CYCLE_SLIP_THRESHOLD<span style=color:#1f2328>)</span> <span style=color:#1f2328>{</span>
-</span></span><span style=display:flex><span>        <span style=color:#cf222e>return</span> <span style=color:#0550ae>1</span><span style=color:#1f2328>;</span> <span style=color:#57606a>// 사이클 슬립 검출
-</span></span></span><span style=display:flex><span><span style=color:#57606a></span>    <span style=color:#1f2328>}</span>
-</span></span><span style=display:flex><span>    
-</span></span><span style=display:flex><span>    <span style=color:#cf222e>return</span> <span style=color:#0550ae>0</span><span style=color:#1f2328>;</span>
-</span></span><span style=display:flex><span><span style=color:#1f2328>}</span>
-</span></span></code></pre></td></tr></table></div></div><h2 id=-정확도-검증-및-품질-관리>◆ 정확도 검증 및 품질 관리</h2><h3 id=성능-지표>성능 지표</h3><div class=highlight><div style=background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4><table style=border-spacing:0;padding:0;margin:0;border:0><tr><td style=vertical-align:top;padding:0;margin:0;border:0><pre tabindex=0 style=background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f"> 1
-</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f"> 2
-</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f"> 3
-</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f"> 4
-</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f"> 5
-</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f"> 6
-</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f"> 7
-</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f"> 8
-</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f"> 9
-</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f">10
-</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f">11
-</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f">12
-</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f">13
-</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f">14
-</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f">15
-</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f">16
-</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f">17
-</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f">18
-</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f">19
-</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f">20
-</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f">21
-</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f">22
-</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f">23
-</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f">24
-</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f">25
-</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:.4em;padding:0 .4em;color:#7f7f7f">26
-</span></code></pre></td><td style=vertical-align:top;padding:0;margin:0;border:0;width:100%><pre tabindex=0 style=background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-c data-lang=c><span style=display:flex><span><span style=color:#cf222e>typedef</span> <span style=color:#cf222e>struct</span> <span style=color:#1f2328>{</span>
-</span></span><span style=display:flex><span>    <span style=color:#cf222e>double</span> horizontal_accuracy<span style=color:#1f2328>;</span>  <span style=color:#57606a>// 수평 정확도 (m)
-</span></span></span><span style=display:flex><span><span style=color:#57606a></span>    <span style=color:#cf222e>double</span> vertical_accuracy<span style=color:#1f2328>;</span>    <span style=color:#57606a>// 수직 정확도 (m)  
-</span></span></span><span style=display:flex><span><span style=color:#57606a></span>    <span style=color:#cf222e>double</span> precision<span style=color:#1f2328>;</span>           <span style=color:#57606a>// 정밀도 (m)
-</span></span></span><span style=display:flex><span><span style=color:#57606a></span>    <span style=color:#cf222e>int</span> fix_ratio<span style=color:#1f2328>;</span>             <span style=color:#57606a>// Fixed 해 비율 (%)
-</span></span></span><span style=display:flex><span><span style=color:#57606a></span>    <span style=color:#cf222e>double</span> initialization_time<span style=color:#1f2328>;</span> <span style=color:#57606a>// 초기화 시간 (s)
-</span></span></span><span style=display:flex><span><span style=color:#57606a></span><span style=color:#1f2328>}</span> <span style=color:#cf222e>rtk_performance_t</span><span style=color:#1f2328>;</span>
-</span></span><span style=display:flex><span>
-</span></span><span style=display:flex><span><span style=color:#cf222e>void</span> <span style=color:#6639ba>evaluate_rtk_performance</span><span style=color:#1f2328>(</span><span style=color:#cf222e>rtk_solution_t</span><span style=color:#0550ae>*</span> solutions<span style=color:#1f2328>,</span> <span style=color:#cf222e>int</span> count<span style=color:#1f2328>,</span>
-</span></span><span style=display:flex><span>                             <span style=color:#cf222e>rtk_performance_t</span><span style=color:#0550ae>*</span> perf<span style=color:#1f2328>)</span> <span style=color:#1f2328>{</span>
-</span></span><span style=display:flex><span>    <span style=color:#cf222e>double</span> sum_h <span style=color:#0550ae>=</span> <span style=color:#0550ae>0</span><span style=color:#1f2328>,</span> sum_v <span style=color:#0550ae>=</span> <span style=color:#0550ae>0</span><span style=color:#1f2328>;</span>
-</span></span><span style=display:flex><span>    <span style=color:#cf222e>int</span> fixed_count <span style=color:#0550ae>=</span> <span style=color:#0550ae>0</span><span style=color:#1f2328>;</span>
-</span></span><span style=display:flex><span>    
-</span></span><span style=display:flex><span>    <span style=color:#cf222e>for</span><span style=color:#1f2328>(</span><span style=color:#cf222e>int</span> i <span style=color:#0550ae>=</span> <span style=color:#0550ae>0</span><span style=color:#1f2328>;</span> i <span style=color:#0550ae>&lt;</span> count<span style=color:#1f2328>;</span> i<span style=color:#0550ae>++</span><span style=color:#1f2328>)</span> <span style=color:#1f2328>{</span>
-</span></span><span style=display:flex><span>        sum_h <span style=color:#0550ae>+=</span> solutions<span style=color:#1f2328>[</span>i<span style=color:#1f2328>].</span>std_horizontal<span style=color:#1f2328>;</span>
-</span></span><span style=display:flex><span>        sum_v <span style=color:#0550ae>+=</span> solutions<span style=color:#1f2328>[</span>i<span style=color:#1f2328>].</span>std_vertical<span style=color:#1f2328>;</span>
-</span></span><span style=display:flex><span>        
-</span></span><span style=display:flex><span>        <span style=color:#cf222e>if</span><span style=color:#1f2328>(</span>solutions<span style=color:#1f2328>[</span>i<span style=color:#1f2328>].</span>fix_type <span style=color:#0550ae>==</span> RTK_FIXED<span style=color:#1f2328>)</span> <span style=color:#1f2328>{</span>
-</span></span><span style=display:flex><span>            fixed_count<span style=color:#0550ae>++</span><span style=color:#1f2328>;</span>
-</span></span><span style=display:flex><span>        <span style=color:#1f2328>}</span>
-</span></span><span style=display:flex><span>    <span style=color:#1f2328>}</span>
-</span></span><span style=display:flex><span>    
-</span></span><span style=display:flex><span>    perf<span style=color:#0550ae>-&gt;</span>horizontal_accuracy <span style=color:#0550ae>=</span> sum_h <span style=color:#0550ae>/</span> count<span style=color:#1f2328>;</span>
-</span></span><span style=display:flex><span>    perf<span style=color:#0550ae>-&gt;</span>vertical_accuracy <span style=color:#0550ae>=</span> sum_v <span style=color:#0550ae>/</span> count<span style=color:#1f2328>;</span>
-</span></span><span style=display:flex><span>    perf<span style=color:#0550ae>-&gt;</span>fix_ratio <span style=color:#0550ae>=</span> <span style=color:#1f2328>(</span>fixed_count <span style=color:#0550ae>*</span> <span style=color:#0550ae>100</span><span style=color:#1f2328>)</span> <span style=color:#0550ae>/</span> count<span style=color:#1f2328>;</span>
-</span></span><span style=display:flex><span><span style=color:#1f2328>}</span>
-</span></span></code></pre></td></tr></table></div></div><h2 id=-실제-응용-사례>◆ 실제 응용 사례</h2><h3 id=1-농업용-자동화-트랙터>1. 농업용 자동화 트랙터</h3><ul><li><strong>요구 정확도</strong>: 2-5cm</li><li><strong>특수 요구사항</strong>: 긴 기선거리, 장애물 환경</li></ul><h3 id=2-건설-장비-제어>2. 건설 장비 제어</h3><ul><li><strong>요구 정확도</strong>: 1-3cm</li><li><strong>특수 요구사항</strong>: 실시간 처리, 고신뢰성</li></ul><h3 id=3-무인-항공기uav>3. 무인 항공기(UAV)</h3><ul><li><strong>요구 정확도</strong>: 5-10cm</li><li><strong>특수 요구사항</strong>: 빠른 초기화, 동적 환경</li></ul><h2 id=-문제-해결-및-디버깅>◆ 문제 해결 및 디버깅</h2><h3 id=일반적인-문제들>일반적인 문제들</h3><ol><li><p><strong>초기화 지연</strong></p><ul><li>원인: 불충분한 위성 수, 신호 품질 저하</li><li>해결: 위성 마스크 조정, 다중 주파수 활용</li></ul></li><li><p><strong>Fixed 해 손실</strong></p><ul><li>원인: 다중경로, 사이클 슬립</li><li>해결: 안테나 위치 조정, 품질 관리 강화</li></ul></li><li><p><strong>통신 지연</strong></p><ul><li>원인: 네트워크 지연, 데이터 손실</li><li>해결: 버퍼링 전략, 압축 알고리즘</li></ul></li></ol><h2 id=-마무리>◆ 마무리</h2><p>RTK GPS 시스템 구현은 복잡하지만, 단계별로 접근하면 충분히 구현 가능합니다.
-핵심은 정확한 알고리즘 구현과 철저한 테스트입니다.</p><h3 id=추천-학습-자료>추천 학습 자료</h3><ul><li><strong>RTKLIB</strong>: 오픈소스 GNSS 라이브러리</li><li><strong>IGS</strong>: 국제 GNSS 서비스 데이터</li><li><strong>논문</strong>: &ldquo;GNSS 데이터 처리의 원리&rdquo; 관련 연구</li></ul><h3 id=다음-글-예고>다음 글 예고</h3><ul><li>다중 GNSS 시스템 통합 (GPS+GLONASS+Galileo)</li><li>머신러닝을 활용한 GNSS 신호 품질 향상</li></ul><hr><p><em>RTK 구현에 대한 더 구체적인 질문이나 경험을 공유하고 싶으시면 댓글로 남겨주세요!</em></p><ul class=pa0><li class="list di"><a href=/tags/rtk/ class="link f5 grow br-pill ba ph3 pv2 mb2 dib black sans-serif no-underline">RTK</a></li><li class="list di"><a href=/tags/gps/ class="link f5 grow br-pill ba ph3 pv2 mb2 dib black sans-serif no-underline">GPS</a></li><li class="list di"><a href=/tags/gnss/ class="link f5 grow br-pill ba ph3 pv2 mb2 dib black sans-serif no-underline">GNSS</a></li><li class="list di"><a href=/tags/%EA%B3%A0%EC%A0%95%EB%B0%80%EC%B8%A1%EC%9C%84/ class="link f5 grow br-pill ba ph3 pv2 mb2 dib black sans-serif no-underline">고정밀측위</a></li><li class="list di"><a href=/tags/%EA%B5%AC%ED%98%84/ class="link f5 grow br-pill ba ph3 pv2 mb2 dib black sans-serif no-underline">구현</a></li></ul><div class="mt6 instapaper_ignoref"></div></div><aside class="w-30-l mt6-l"></aside></article></main><footer class="bg-black bottom-0 w-100 pa3" role=contentinfo><div class="flex justify-between"><a class="f4 fw4 hover-white white-70 dn dib-ns pv2 ph3 no-underline" href=https://yongrae-jo.github.io/>&copy; Yongrae Jo - Blog 2025</a><div><div class=ananke-socials></div></div></div></footer></body></html>
+<!DOCTYPE html>
+<html lang="ko-kr">
+  <head><script src="/livereload.js?mindelay=10&amp;v=2&amp;port=1313&amp;path=livereload" data-no-instant defer></script>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    
+    <title>RTK GPS 시스템 구현 가이드 | Yongrae Jo - Blog</title>
+    <meta name="viewport" content="width=device-width,minimum-scale=1">
+    <meta name="description" content="RTK(Real-Time Kinematic) GPS 시스템의 구현 방법과 핵심 알고리즘에 대해 알아보겠습니다.">
+    <meta name="generator" content="Hugo 0.147.8">
+    
+    
+    
+      <meta name="robots" content="noindex, nofollow">
+    
+    <meta name="author" content="Yongrae Jo">
+    
+
+    
+<link rel="stylesheet" href="/ananke/css/main.min.css" >
+
+
+
+
+    
+
+
+    
+      
+
+    
+
+    
+
+    
+      <link rel="canonical" href="http://localhost:1313/posts/rtk-implementation/">
+    
+
+    <meta property="og:url" content="http://localhost:1313/posts/rtk-implementation/">
+  <meta property="og:site_name" content="Yongrae Jo - Blog">
+  <meta property="og:title" content="RTK GPS 시스템 구현 가이드">
+  <meta property="og:description" content="RTK(Real-Time Kinematic) GPS 시스템의 구현 방법과 핵심 알고리즘에 대해 알아보겠습니다.">
+  <meta property="og:locale" content="ko_kr">
+  <meta property="og:type" content="article">
+    <meta property="article:section" content="posts">
+    <meta property="article:published_time" content="2025-06-11T09:15:00+09:00">
+    <meta property="article:modified_time" content="2025-06-11T09:15:00+09:00">
+    <meta property="article:tag" content="RTK">
+    <meta property="article:tag" content="GPS">
+    <meta property="article:tag" content="GNSS">
+    <meta property="article:tag" content="고정밀측위">
+    <meta property="article:tag" content="구현">
+
+  <meta itemprop="name" content="RTK GPS 시스템 구현 가이드">
+  <meta itemprop="description" content="RTK(Real-Time Kinematic) GPS 시스템의 구현 방법과 핵심 알고리즘에 대해 알아보겠습니다.">
+  <meta itemprop="datePublished" content="2025-06-11T09:15:00+09:00">
+  <meta itemprop="dateModified" content="2025-06-11T09:15:00+09:00">
+  <meta itemprop="wordCount" content="1091">
+  <meta itemprop="keywords" content="RTK,GPS,GNSS,고정밀측위,구현">
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:title" content="RTK GPS 시스템 구현 가이드">
+  <meta name="twitter:description" content="RTK(Real-Time Kinematic) GPS 시스템의 구현 방법과 핵심 알고리즘에 대해 알아보겠습니다.">
+
+	
+  </head><body class="ma0 avenir bg-near-white development">
+
+    
+   
+  
+
+  <header>
+    <div class="bg-black">
+      <nav class="pv3 ph3 ph4-ns" role="navigation">
+  <div class="flex-l center items-center justify-between">
+    <a href="/" class="f3 fw2 hover-white white-90 dib no-underline">
+      
+        Yongrae Jo - Blog
+      
+    </a>
+    <div class="flex-l items-center">
+      
+
+      
+        <ul class="pl0 mr3">
+          
+          <li class="list f5 f4-ns fw4 dib pr3">
+            <a class="hover-white white-90 no-underline" href="/" title="Home page">
+              Home
+            </a>
+          </li>
+          
+          <li class="list f5 f4-ns fw4 dib pr3">
+            <a class="hover-white white-90 no-underline" href="/posts/" title="Posts page">
+              Posts
+            </a>
+          </li>
+          
+          <li class="list f5 f4-ns fw4 dib pr3">
+            <a class="hover-white white-90 no-underline" href="/about/" title="About page">
+              About
+            </a>
+          </li>
+          
+          <li class="list f5 f4-ns fw4 dib pr3">
+            <a class="hover-white white-90 no-underline" href="/about/" title="About page">
+              About
+            </a>
+          </li>
+          
+        </ul>
+      
+      <div class="ananke-socials"></div>
+
+    </div>
+  </div>
+</nav>
+
+    </div>
+  </header>
+
+
+
+    <main class="pb7" role="main">
+      
+  
+  
+  <article class="flex-l mw8 center ph3 flex-wrap justify-between">
+    <header class="mt4 w-100">
+      <aside class="instapaper_ignoref b helvetica tracked ttu">
+          
+        Posts
+      </aside><div id="sharing" class="mt3 ananke-socials"></div>
+<h1 class="f1 athelas mt3 mb1">RTK GPS 시스템 구현 가이드</h1>
+      
+      <p class="tracked"><strong>Yongrae Jo</strong>
+      </p>
+      
+      
+      
+      <time class="f6 mv4 dib tracked" datetime="2025-06-11T09:15:00+09:00">June 11, 2025</time>
+      
+
+      
+      
+        <span class="f6 mv4 dib tracked"> - 6 minutes read </span>
+        <span class="f6 mv4 dib tracked"> - 1091 words </span>
+      
+    </header>
+    <div class="nested-copy-line-height lh-copy serif f4 nested-links mid-gray pr4-l w-two-thirds-l"><h1 id="rtk-gps-시스템-구현-가이드">RTK GPS 시스템 구현 가이드</h1>
+<p>RTK(Real-Time Kinematic) GPS는 센티미터급 정확도를 제공하는 고정밀 측위 기술입니다.
+이번 포스트에서는 RTK 시스템의 구현 방법과 핵심 알고리즘에 대해 자세히 다뤄보겠습니다.</p>
+<h2 id="-rtk란-무엇인가">▶ RTK란 무엇인가?</h2>
+<p>RTK는 기준국(Base Station)과 이동국(Rover) 간의 반송파 위상 관측치를 실시간으로 차분하여
+센티미터급 정확도를 달성하는 고정밀 GNSS 측위 기법입니다.</p>
+<h3 id="rtk의-장점">RTK의 장점</h3>
+<ul>
+<li><strong>높은 정확도</strong>: 수평 1-3cm, 수직 2-5cm</li>
+<li><strong>실시간 처리</strong>: 초 단위 내 해 제공</li>
+<li><strong>상대 측위</strong>: 기준국 대비 상대 위치 결정</li>
+</ul>
+<h2 id="-rtk-시스템-구성">◆ RTK 시스템 구성</h2>
+<h3 id="1-하드웨어-구성">1. 하드웨어 구성</h3>
+<div class="highlight"><div style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">
+<table style="border-spacing:0;padding:0;margin:0;border:0;"><tr><td style="vertical-align:top;padding:0;margin:0;border:0;">
+<pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">1
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">2
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">3
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">4
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">5
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">6
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">7
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">8
+</span></code></pre></td>
+<td style="vertical-align:top;padding:0;margin:0;border:0;;width:100%">
+<pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-text" data-lang="text"><span style="display:flex;"><span>┌─────────────┐     ┌─────────────┐
+</span></span><span style="display:flex;"><span>│ 기준국      │────▶│ 이동국      │
+</span></span><span style="display:flex;"><span>│ (Base)      │ RTK │ (Rover)     │
+</span></span><span style="display:flex;"><span>│             │보정 │             │
+</span></span><span style="display:flex;"><span>│ • GNSS 수신기│데이터│ • GNSS 수신기│
+</span></span><span style="display:flex;"><span>│ • 통신 장비 │     │ • 통신 장비 │
+</span></span><span style="display:flex;"><span>│ • 안테나    │     │ • 안테나    │
+</span></span><span style="display:flex;"><span>└─────────────┘     └─────────────┘
+</span></span></code></pre></td></tr></table>
+</div>
+</div><h3 id="2-소프트웨어-구성">2. 소프트웨어 구성</h3>
+<div class="highlight"><div style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">
+<table style="border-spacing:0;padding:0;margin:0;border:0;"><tr><td style="vertical-align:top;padding:0;margin:0;border:0;">
+<pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">1
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">2
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">3
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">4
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">5
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">6
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">7
+</span></code></pre></td>
+<td style="vertical-align:top;padding:0;margin:0;border:0;;width:100%">
+<pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c" data-lang="c"><span style="display:flex;"><span><span style="color:#57606a">// RTK 시스템 주요 모듈
+</span></span></span><span style="display:flex;"><span><span style="color:#57606a"></span><span style="color:#cf222e">typedef</span> <span style="color:#cf222e">struct</span> <span style="color:#1f2328">{</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#cf222e">gnss_obs_t</span> base_obs<span style="color:#1f2328">[</span>MAX_SAT<span style="color:#1f2328">];</span>     <span style="color:#57606a">// 기준국 관측치
+</span></span></span><span style="display:flex;"><span><span style="color:#57606a"></span>    <span style="color:#cf222e">gnss_obs_t</span> rover_obs<span style="color:#1f2328">[</span>MAX_SAT<span style="color:#1f2328">];</span>    <span style="color:#57606a">// 이동국 관측치
+</span></span></span><span style="display:flex;"><span><span style="color:#57606a"></span>    <span style="color:#cf222e">nav_t</span> navigation<span style="color:#1f2328">;</span>                 <span style="color:#57606a">// 항법 메시지
+</span></span></span><span style="display:flex;"><span><span style="color:#57606a"></span>    <span style="color:#cf222e">rtk_sol_t</span> solution<span style="color:#1f2328">;</span>              <span style="color:#57606a">// RTK 해
+</span></span></span><span style="display:flex;"><span><span style="color:#57606a"></span><span style="color:#1f2328">}</span> <span style="color:#cf222e">rtk_system_t</span><span style="color:#1f2328">;</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><h2 id="-rtk-알고리즘-구현">◆ RTK 알고리즘 구현</h2>
+<h3 id="1-이중차분double-difference-계산">1. 이중차분(Double Difference) 계산</h3>
+<p>RTK의 핵심은 이중차분 관측치를 통한 오차 제거입니다.</p>
+<div class="highlight"><div style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">
+<table style="border-spacing:0;padding:0;margin:0;border:0;"><tr><td style="vertical-align:top;padding:0;margin:0;border:0;">
+<pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 1
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 2
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 3
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 4
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 5
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 6
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 7
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 8
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 9
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">10
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">11
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">12
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">13
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">14
+</span></code></pre></td>
+<td style="vertical-align:top;padding:0;margin:0;border:0;;width:100%">
+<pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c" data-lang="c"><span style="display:flex;"><span><span style="color:#cf222e">double</span> <span style="color:#6639ba">calculate_double_difference</span><span style="color:#1f2328">(</span><span style="color:#cf222e">gnss_obs_t</span><span style="color:#0550ae">*</span> base<span style="color:#1f2328">,</span> <span style="color:#cf222e">gnss_obs_t</span><span style="color:#0550ae">*</span> rover<span style="color:#1f2328">,</span>
+</span></span><span style="display:flex;"><span>                                 <span style="color:#cf222e">int</span> sat1<span style="color:#1f2328">,</span> <span style="color:#cf222e">int</span> sat2<span style="color:#1f2328">,</span> <span style="color:#cf222e">int</span> freq<span style="color:#1f2328">)</span> <span style="color:#1f2328">{</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#cf222e">double</span> dd_code<span style="color:#1f2328">,</span> dd_phase<span style="color:#1f2328">;</span>
+</span></span><span style="display:flex;"><span>    
+</span></span><span style="display:flex;"><span>    <span style="color:#57606a">// 이중차분 코드 관측치
+</span></span></span><span style="display:flex;"><span><span style="color:#57606a"></span>    dd_code <span style="color:#0550ae">=</span> <span style="color:#1f2328">(</span>rover<span style="color:#1f2328">[</span>sat1<span style="color:#1f2328">].</span>P<span style="color:#1f2328">[</span>freq<span style="color:#1f2328">]</span> <span style="color:#0550ae">-</span> rover<span style="color:#1f2328">[</span>sat2<span style="color:#1f2328">].</span>P<span style="color:#1f2328">[</span>freq<span style="color:#1f2328">])</span> <span style="color:#0550ae">-</span> 
+</span></span><span style="display:flex;"><span>              <span style="color:#1f2328">(</span>base<span style="color:#1f2328">[</span>sat1<span style="color:#1f2328">].</span>P<span style="color:#1f2328">[</span>freq<span style="color:#1f2328">]</span> <span style="color:#0550ae">-</span> base<span style="color:#1f2328">[</span>sat2<span style="color:#1f2328">].</span>P<span style="color:#1f2328">[</span>freq<span style="color:#1f2328">]);</span>
+</span></span><span style="display:flex;"><span>    
+</span></span><span style="display:flex;"><span>    <span style="color:#57606a">// 이중차분 반송파 위상 관측치  
+</span></span></span><span style="display:flex;"><span><span style="color:#57606a"></span>    dd_phase <span style="color:#0550ae">=</span> <span style="color:#1f2328">(</span>rover<span style="color:#1f2328">[</span>sat1<span style="color:#1f2328">].</span>L<span style="color:#1f2328">[</span>freq<span style="color:#1f2328">]</span> <span style="color:#0550ae">-</span> rover<span style="color:#1f2328">[</span>sat2<span style="color:#1f2328">].</span>L<span style="color:#1f2328">[</span>freq<span style="color:#1f2328">])</span> <span style="color:#0550ae">-</span> 
+</span></span><span style="display:flex;"><span>               <span style="color:#1f2328">(</span>base<span style="color:#1f2328">[</span>sat1<span style="color:#1f2328">].</span>L<span style="color:#1f2328">[</span>freq<span style="color:#1f2328">]</span> <span style="color:#0550ae">-</span> base<span style="color:#1f2328">[</span>sat2<span style="color:#1f2328">].</span>L<span style="color:#1f2328">[</span>freq<span style="color:#1f2328">]);</span>
+</span></span><span style="display:flex;"><span>    
+</span></span><span style="display:flex;"><span>    <span style="color:#cf222e">return</span> dd_phase<span style="color:#1f2328">;</span>
+</span></span><span style="display:flex;"><span><span style="color:#1f2328">}</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><h3 id="2-정수-미지수integer-ambiguity-결정">2. 정수 미지수(Integer Ambiguity) 결정</h3>
+<div class="highlight"><div style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">
+<table style="border-spacing:0;padding:0;margin:0;border:0;"><tr><td style="vertical-align:top;padding:0;margin:0;border:0;">
+<pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 1
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 2
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 3
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 4
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 5
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 6
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 7
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 8
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 9
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">10
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">11
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">12
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">13
+</span></code></pre></td>
+<td style="vertical-align:top;padding:0;margin:0;border:0;;width:100%">
+<pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c" data-lang="c"><span style="display:flex;"><span><span style="color:#cf222e">int</span> <span style="color:#6639ba">resolve_ambiguity</span><span style="color:#1f2328">(</span><span style="color:#cf222e">rtk_system_t</span><span style="color:#0550ae">*</span> rtk<span style="color:#1f2328">,</span> <span style="color:#cf222e">double</span><span style="color:#0550ae">*</span> float_amb<span style="color:#1f2328">,</span> <span style="color:#cf222e">int</span><span style="color:#0550ae">*</span> fixed_amb<span style="color:#1f2328">)</span> <span style="color:#1f2328">{</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#cf222e">double</span> ratio_threshold <span style="color:#0550ae">=</span> <span style="color:#0550ae">3.0</span><span style="color:#1f2328">;</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#cf222e">double</span> ratio<span style="color:#1f2328">;</span>
+</span></span><span style="display:flex;"><span>    
+</span></span><span style="display:flex;"><span>    <span style="color:#57606a">// LAMBDA 방법 또는 MLAMBDA 적용
+</span></span></span><span style="display:flex;"><span><span style="color:#57606a"></span>    ratio <span style="color:#0550ae">=</span> <span style="color:#6639ba">lambda_search</span><span style="color:#1f2328">(</span>float_amb<span style="color:#1f2328">,</span> fixed_amb<span style="color:#1f2328">,</span> rtk<span style="color:#0550ae">-&gt;</span>num_amb<span style="color:#1f2328">);</span>
+</span></span><span style="display:flex;"><span>    
+</span></span><span style="display:flex;"><span>    <span style="color:#cf222e">if</span> <span style="color:#1f2328">(</span>ratio <span style="color:#0550ae">&gt;</span> ratio_threshold<span style="color:#1f2328">)</span> <span style="color:#1f2328">{</span>
+</span></span><span style="display:flex;"><span>        <span style="color:#cf222e">return</span> RTK_FIXED<span style="color:#1f2328">;</span>  <span style="color:#57606a">// Fixed 해
+</span></span></span><span style="display:flex;"><span><span style="color:#57606a"></span>    <span style="color:#1f2328">}</span> <span style="color:#cf222e">else</span> <span style="color:#1f2328">{</span>
+</span></span><span style="display:flex;"><span>        <span style="color:#cf222e">return</span> RTK_FLOAT<span style="color:#1f2328">;</span>  <span style="color:#57606a">// Float 해
+</span></span></span><span style="display:flex;"><span><span style="color:#57606a"></span>    <span style="color:#1f2328">}</span>
+</span></span><span style="display:flex;"><span><span style="color:#1f2328">}</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><h3 id="3-칼만-필터-적용">3. 칼만 필터 적용</h3>
+<div class="highlight"><div style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">
+<table style="border-spacing:0;padding:0;margin:0;border:0;"><tr><td style="vertical-align:top;padding:0;margin:0;border:0;">
+<pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 1
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 2
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 3
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 4
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 5
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 6
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 7
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 8
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 9
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">10
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">11
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">12
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">13
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">14
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">15
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">16
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">17
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">18
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">19
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">20
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">21
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">22
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">23
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">24
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">25
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">26
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">27
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">28
+</span></code></pre></td>
+<td style="vertical-align:top;padding:0;margin:0;border:0;;width:100%">
+<pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c" data-lang="c"><span style="display:flex;"><span><span style="color:#cf222e">typedef</span> <span style="color:#cf222e">struct</span> <span style="color:#1f2328">{</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#cf222e">double</span> x<span style="color:#1f2328">[</span>RTK_STATE_SIZE<span style="color:#1f2328">];</span>     <span style="color:#57606a">// 상태 벡터
+</span></span></span><span style="display:flex;"><span><span style="color:#57606a"></span>    <span style="color:#cf222e">double</span> P<span style="color:#1f2328">[</span>RTK_STATE_SIZE <span style="color:#0550ae">*</span> RTK_STATE_SIZE<span style="color:#1f2328">];</span> <span style="color:#57606a">// 공분산 행렬
+</span></span></span><span style="display:flex;"><span><span style="color:#57606a"></span>    <span style="color:#cf222e">double</span> Q<span style="color:#1f2328">[</span>RTK_STATE_SIZE <span style="color:#0550ae">*</span> RTK_STATE_SIZE<span style="color:#1f2328">];</span> <span style="color:#57606a">// 시스템 노이즈
+</span></span></span><span style="display:flex;"><span><span style="color:#57606a"></span>    <span style="color:#cf222e">double</span> R<span style="color:#1f2328">[</span>MAX_OBS<span style="color:#1f2328">];</span>            <span style="color:#57606a">// 관측 노이즈
+</span></span></span><span style="display:flex;"><span><span style="color:#57606a"></span><span style="color:#1f2328">}</span> <span style="color:#cf222e">kalman_filter_t</span><span style="color:#1f2328">;</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#cf222e">int</span> <span style="color:#6639ba">rtk_kalman_update</span><span style="color:#1f2328">(</span><span style="color:#cf222e">kalman_filter_t</span><span style="color:#0550ae">*</span> kf<span style="color:#1f2328">,</span> <span style="color:#cf222e">double</span><span style="color:#0550ae">*</span> obs<span style="color:#1f2328">,</span> <span style="color:#cf222e">double</span><span style="color:#0550ae">*</span> H<span style="color:#1f2328">)</span> <span style="color:#1f2328">{</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#57606a">// 예측 단계
+</span></span></span><span style="display:flex;"><span><span style="color:#57606a"></span>    <span style="color:#6639ba">matrix_multiply</span><span style="color:#1f2328">(</span>kf<span style="color:#0550ae">-&gt;</span>F<span style="color:#1f2328">,</span> kf<span style="color:#0550ae">-&gt;</span>x<span style="color:#1f2328">,</span> kf<span style="color:#0550ae">-&gt;</span>x_pred<span style="color:#1f2328">);</span>
+</span></span><span style="display:flex;"><span>    
+</span></span><span style="display:flex;"><span>    <span style="color:#57606a">// 업데이트 단계  
+</span></span></span><span style="display:flex;"><span><span style="color:#57606a"></span>    <span style="color:#6639ba">matrix_multiply</span><span style="color:#1f2328">(</span>H<span style="color:#1f2328">,</span> kf<span style="color:#0550ae">-&gt;</span>P_pred<span style="color:#1f2328">,</span> HP<span style="color:#1f2328">);</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#6639ba">matrix_multiply</span><span style="color:#1f2328">(</span>HP<span style="color:#1f2328">,</span> H_T<span style="color:#1f2328">,</span> S<span style="color:#1f2328">);</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#6639ba">matrix_add</span><span style="color:#1f2328">(</span>S<span style="color:#1f2328">,</span> kf<span style="color:#0550ae">-&gt;</span>R<span style="color:#1f2328">,</span> S<span style="color:#1f2328">);</span>
+</span></span><span style="display:flex;"><span>    
+</span></span><span style="display:flex;"><span>    <span style="color:#57606a">// 칼만 이득 계산
+</span></span></span><span style="display:flex;"><span><span style="color:#57606a"></span>    <span style="color:#6639ba">matrix_multiply</span><span style="color:#1f2328">(</span>kf<span style="color:#0550ae">-&gt;</span>P_pred<span style="color:#1f2328">,</span> H_T<span style="color:#1f2328">,</span> K_temp<span style="color:#1f2328">);</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#6639ba">matrix_inverse</span><span style="color:#1f2328">(</span>S<span style="color:#1f2328">,</span> S_inv<span style="color:#1f2328">);</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#6639ba">matrix_multiply</span><span style="color:#1f2328">(</span>K_temp<span style="color:#1f2328">,</span> S_inv<span style="color:#1f2328">,</span> K<span style="color:#1f2328">);</span>
+</span></span><span style="display:flex;"><span>    
+</span></span><span style="display:flex;"><span>    <span style="color:#57606a">// 상태 업데이트
+</span></span></span><span style="display:flex;"><span><span style="color:#57606a"></span>    <span style="color:#6639ba">matrix_subtract</span><span style="color:#1f2328">(</span>obs<span style="color:#1f2328">,</span> h_x<span style="color:#1f2328">,</span> innovation<span style="color:#1f2328">);</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#6639ba">matrix_multiply</span><span style="color:#1f2328">(</span>K<span style="color:#1f2328">,</span> innovation<span style="color:#1f2328">,</span> K_innov<span style="color:#1f2328">);</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#6639ba">matrix_add</span><span style="color:#1f2328">(</span>kf<span style="color:#0550ae">-&gt;</span>x_pred<span style="color:#1f2328">,</span> K_innov<span style="color:#1f2328">,</span> kf<span style="color:#0550ae">-&gt;</span>x<span style="color:#1f2328">);</span>
+</span></span><span style="display:flex;"><span>    
+</span></span><span style="display:flex;"><span>    <span style="color:#cf222e">return</span> <span style="color:#0550ae">0</span><span style="color:#1f2328">;</span>
+</span></span><span style="display:flex;"><span><span style="color:#1f2328">}</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><h2 id="-실시간-데이터-처리">◆ 실시간 데이터 처리</h2>
+<h3 id="1-rtcm-메시지-처리">1. RTCM 메시지 처리</h3>
+<div class="highlight"><div style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">
+<table style="border-spacing:0;padding:0;margin:0;border:0;"><tr><td style="vertical-align:top;padding:0;margin:0;border:0;">
+<pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 1
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 2
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 3
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 4
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 5
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 6
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 7
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 8
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 9
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">10
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">11
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">12
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">13
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">14
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">15
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">16
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">17
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">18
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">19
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">20
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">21
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">22
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">23
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">24
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">25
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">26
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">27
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">28
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">29
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">30
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">31
+</span></code></pre></td>
+<td style="vertical-align:top;padding:0;margin:0;border:0;;width:100%">
+<pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c" data-lang="c"><span style="display:flex;"><span><span style="color:#cf222e">typedef</span> <span style="color:#cf222e">struct</span> <span style="color:#1f2328">{</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#cf222e">int</span> type<span style="color:#1f2328">;</span>                    <span style="color:#57606a">// 메시지 타입
+</span></span></span><span style="display:flex;"><span><span style="color:#57606a"></span>    <span style="color:#cf222e">int</span> station_id<span style="color:#1f2328">;</span>             <span style="color:#57606a">// 기준국 ID
+</span></span></span><span style="display:flex;"><span><span style="color:#57606a"></span>    <span style="color:#cf222e">double</span> tow<span style="color:#1f2328">;</span>                 <span style="color:#57606a">// GPS 주시간
+</span></span></span><span style="display:flex;"><span><span style="color:#57606a"></span>    <span style="color:#cf222e">gnss_obs_t</span> obs<span style="color:#1f2328">[</span>MAX_SAT<span style="color:#1f2328">];</span>    <span style="color:#57606a">// 관측치 데이터
+</span></span></span><span style="display:flex;"><span><span style="color:#57606a"></span><span style="color:#1f2328">}</span> <span style="color:#cf222e">rtcm_msg_t</span><span style="color:#1f2328">;</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#cf222e">int</span> <span style="color:#6639ba">decode_rtcm3</span><span style="color:#1f2328">(</span><span style="color:#cf222e">unsigned</span> <span style="color:#cf222e">char</span><span style="color:#0550ae">*</span> data<span style="color:#1f2328">,</span> <span style="color:#cf222e">int</span> len<span style="color:#1f2328">,</span> <span style="color:#cf222e">rtcm_msg_t</span><span style="color:#0550ae">*</span> msg<span style="color:#1f2328">)</span> <span style="color:#1f2328">{</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#cf222e">int</span> pos <span style="color:#0550ae">=</span> <span style="color:#0550ae">0</span><span style="color:#1f2328">;</span>
+</span></span><span style="display:flex;"><span>    
+</span></span><span style="display:flex;"><span>    <span style="color:#57606a">// 프리앰블 확인 (0xD3)
+</span></span></span><span style="display:flex;"><span><span style="color:#57606a"></span>    <span style="color:#cf222e">if</span> <span style="color:#1f2328">(</span>data<span style="color:#1f2328">[</span>pos<span style="color:#1f2328">]</span> <span style="color:#0550ae">!=</span> <span style="color:#0550ae">0xD3</span><span style="color:#1f2328">)</span> <span style="color:#cf222e">return</span> <span style="color:#0550ae">-</span><span style="color:#0550ae">1</span><span style="color:#1f2328">;</span>
+</span></span><span style="display:flex;"><span>    pos<span style="color:#0550ae">++</span><span style="color:#1f2328">;</span>
+</span></span><span style="display:flex;"><span>    
+</span></span><span style="display:flex;"><span>    <span style="color:#57606a">// 메시지 길이
+</span></span></span><span style="display:flex;"><span><span style="color:#57606a"></span>    <span style="color:#cf222e">int</span> msg_len <span style="color:#0550ae">=</span> <span style="color:#6639ba">getbitu</span><span style="color:#1f2328">(</span>data<span style="color:#1f2328">,</span> pos<span style="color:#1f2328">,</span> <span style="color:#0550ae">10</span><span style="color:#1f2328">);</span>
+</span></span><span style="display:flex;"><span>    pos <span style="color:#0550ae">+=</span> <span style="color:#0550ae">10</span><span style="color:#1f2328">;</span>
+</span></span><span style="display:flex;"><span>    
+</span></span><span style="display:flex;"><span>    <span style="color:#57606a">// 메시지 타입
+</span></span></span><span style="display:flex;"><span><span style="color:#57606a"></span>    msg<span style="color:#0550ae">-&gt;</span>type <span style="color:#0550ae">=</span> <span style="color:#6639ba">getbitu</span><span style="color:#1f2328">(</span>data<span style="color:#1f2328">,</span> pos<span style="color:#1f2328">,</span> <span style="color:#0550ae">12</span><span style="color:#1f2328">);</span>
+</span></span><span style="display:flex;"><span>    pos <span style="color:#0550ae">+=</span> <span style="color:#0550ae">12</span><span style="color:#1f2328">;</span>
+</span></span><span style="display:flex;"><span>    
+</span></span><span style="display:flex;"><span>    <span style="color:#cf222e">switch</span><span style="color:#1f2328">(</span>msg<span style="color:#0550ae">-&gt;</span>type<span style="color:#1f2328">)</span> <span style="color:#1f2328">{</span>
+</span></span><span style="display:flex;"><span>        <span style="color:#cf222e">case</span> <span style="color:#0550ae">1004</span><span style="color:#0550ae">:</span> <span style="color:#57606a">// GPS 관측치
+</span></span></span><span style="display:flex;"><span><span style="color:#57606a"></span>            <span style="color:#cf222e">return</span> <span style="color:#6639ba">decode_rtcm3_1004</span><span style="color:#1f2328">(</span>data<span style="color:#1f2328">,</span> pos<span style="color:#1f2328">,</span> msg<span style="color:#1f2328">);</span>
+</span></span><span style="display:flex;"><span>        <span style="color:#cf222e">case</span> <span style="color:#0550ae">1012</span><span style="color:#0550ae">:</span> <span style="color:#57606a">// GLONASS 관측치  
+</span></span></span><span style="display:flex;"><span><span style="color:#57606a"></span>            <span style="color:#cf222e">return</span> <span style="color:#6639ba">decode_rtcm3_1012</span><span style="color:#1f2328">(</span>data<span style="color:#1f2328">,</span> pos<span style="color:#1f2328">,</span> msg<span style="color:#1f2328">);</span>
+</span></span><span style="display:flex;"><span>        <span style="color:#cf222e">default</span><span style="color:#0550ae">:</span>
+</span></span><span style="display:flex;"><span>            <span style="color:#cf222e">return</span> <span style="color:#0550ae">-</span><span style="color:#0550ae">1</span><span style="color:#1f2328">;</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#1f2328">}</span>
+</span></span><span style="display:flex;"><span><span style="color:#1f2328">}</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><h3 id="2-통신-프로토콜-구현">2. 통신 프로토콜 구현</h3>
+<div class="highlight"><div style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">
+<table style="border-spacing:0;padding:0;margin:0;border:0;"><tr><td style="vertical-align:top;padding:0;margin:0;border:0;">
+<pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 1
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 2
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 3
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 4
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 5
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 6
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 7
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 8
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 9
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">10
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">11
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">12
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">13
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">14
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">15
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">16
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">17
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">18
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">19
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">20
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">21
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">22
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">23
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">24
+</span></code></pre></td>
+<td style="vertical-align:top;padding:0;margin:0;border:0;;width:100%">
+<pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c" data-lang="c"><span style="display:flex;"><span><span style="color:#cf222e">typedef</span> <span style="color:#cf222e">struct</span> <span style="color:#1f2328">{</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#cf222e">int</span> socket<span style="color:#1f2328">;</span>                 <span style="color:#57606a">// 소켓 디스크립터
+</span></span></span><span style="display:flex;"><span><span style="color:#57606a"></span>    <span style="color:#cf222e">char</span> ip<span style="color:#1f2328">[</span><span style="color:#0550ae">16</span><span style="color:#1f2328">];</span>               <span style="color:#57606a">// IP 주소
+</span></span></span><span style="display:flex;"><span><span style="color:#57606a"></span>    <span style="color:#cf222e">int</span> port<span style="color:#1f2328">;</span>                  <span style="color:#57606a">// 포트 번호
+</span></span></span><span style="display:flex;"><span><span style="color:#57606a"></span>    <span style="color:#cf222e">pthread_t</span> recv_thread<span style="color:#1f2328">;</span>     <span style="color:#57606a">// 수신 스레드
+</span></span></span><span style="display:flex;"><span><span style="color:#57606a"></span><span style="color:#1f2328">}</span> <span style="color:#cf222e">comm_channel_t</span><span style="color:#1f2328">;</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#cf222e">void</span><span style="color:#0550ae">*</span> <span style="color:#6639ba">rtk_recv_thread</span><span style="color:#1f2328">(</span><span style="color:#cf222e">void</span><span style="color:#0550ae">*</span> arg<span style="color:#1f2328">)</span> <span style="color:#1f2328">{</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#cf222e">comm_channel_t</span><span style="color:#0550ae">*</span> comm <span style="color:#0550ae">=</span> <span style="color:#1f2328">(</span><span style="color:#cf222e">comm_channel_t</span><span style="color:#0550ae">*</span><span style="color:#1f2328">)</span>arg<span style="color:#1f2328">;</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#cf222e">unsigned</span> <span style="color:#cf222e">char</span> buffer<span style="color:#1f2328">[</span><span style="color:#0550ae">1024</span><span style="color:#1f2328">];</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#cf222e">int</span> len<span style="color:#1f2328">;</span>
+</span></span><span style="display:flex;"><span>    
+</span></span><span style="display:flex;"><span>    <span style="color:#cf222e">while</span><span style="color:#1f2328">(</span><span style="color:#0550ae">1</span><span style="color:#1f2328">)</span> <span style="color:#1f2328">{</span>
+</span></span><span style="display:flex;"><span>        len <span style="color:#0550ae">=</span> <span style="color:#6639ba">recv</span><span style="color:#1f2328">(</span>comm<span style="color:#0550ae">-&gt;</span>socket<span style="color:#1f2328">,</span> buffer<span style="color:#1f2328">,</span> <span style="color:#cf222e">sizeof</span><span style="color:#1f2328">(</span>buffer<span style="color:#1f2328">),</span> <span style="color:#0550ae">0</span><span style="color:#1f2328">);</span>
+</span></span><span style="display:flex;"><span>        <span style="color:#cf222e">if</span> <span style="color:#1f2328">(</span>len <span style="color:#0550ae">&gt;</span> <span style="color:#0550ae">0</span><span style="color:#1f2328">)</span> <span style="color:#1f2328">{</span>
+</span></span><span style="display:flex;"><span>            <span style="color:#57606a">// RTCM 메시지 디코딩
+</span></span></span><span style="display:flex;"><span><span style="color:#57606a"></span>            <span style="color:#cf222e">rtcm_msg_t</span> msg<span style="color:#1f2328">;</span>
+</span></span><span style="display:flex;"><span>            <span style="color:#cf222e">if</span> <span style="color:#1f2328">(</span><span style="color:#6639ba">decode_rtcm3</span><span style="color:#1f2328">(</span>buffer<span style="color:#1f2328">,</span> len<span style="color:#1f2328">,</span> <span style="color:#0550ae">&amp;</span>msg<span style="color:#1f2328">)</span> <span style="color:#0550ae">==</span> <span style="color:#0550ae">0</span><span style="color:#1f2328">)</span> <span style="color:#1f2328">{</span>
+</span></span><span style="display:flex;"><span>                <span style="color:#6639ba">process_rtk_observation</span><span style="color:#1f2328">(</span><span style="color:#0550ae">&amp;</span>msg<span style="color:#1f2328">);</span>
+</span></span><span style="display:flex;"><span>            <span style="color:#1f2328">}</span>
+</span></span><span style="display:flex;"><span>        <span style="color:#1f2328">}</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#1f2328">}</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#cf222e">return</span> <span style="color:#6639ba">NULL</span><span style="color:#1f2328">;</span>
+</span></span><span style="display:flex;"><span><span style="color:#1f2328">}</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><h2 id="-성능-최적화-기법">◆ 성능 최적화 기법</h2>
+<h3 id="1-위성-선택-알고리즘">1. 위성 선택 알고리즘</h3>
+<div class="highlight"><div style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">
+<table style="border-spacing:0;padding:0;margin:0;border:0;"><tr><td style="vertical-align:top;padding:0;margin:0;border:0;">
+<pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 1
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 2
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 3
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 4
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 5
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 6
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 7
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 8
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 9
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">10
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">11
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">12
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">13
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">14
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">15
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">16
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">17
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">18
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">19
+</span></code></pre></td>
+<td style="vertical-align:top;padding:0;margin:0;border:0;;width:100%">
+<pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c" data-lang="c"><span style="display:flex;"><span><span style="color:#cf222e">int</span> <span style="color:#6639ba">select_satellites</span><span style="color:#1f2328">(</span><span style="color:#cf222e">gnss_obs_t</span><span style="color:#0550ae">*</span> obs<span style="color:#1f2328">,</span> <span style="color:#cf222e">int</span><span style="color:#0550ae">*</span> selected<span style="color:#1f2328">,</span> <span style="color:#cf222e">int</span> max_sat<span style="color:#1f2328">)</span> <span style="color:#1f2328">{</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#cf222e">double</span> elevation<span style="color:#1f2328">[</span>MAX_SAT<span style="color:#1f2328">];</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#cf222e">double</span> azimuth<span style="color:#1f2328">[</span>MAX_SAT<span style="color:#1f2328">];</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#cf222e">int</span> count <span style="color:#0550ae">=</span> <span style="color:#0550ae">0</span><span style="color:#1f2328">;</span>
+</span></span><span style="display:flex;"><span>    
+</span></span><span style="display:flex;"><span>    <span style="color:#57606a">// 고도각 계산 및 마스크 적용
+</span></span></span><span style="display:flex;"><span><span style="color:#57606a"></span>    <span style="color:#cf222e">for</span><span style="color:#1f2328">(</span><span style="color:#cf222e">int</span> i <span style="color:#0550ae">=</span> <span style="color:#0550ae">0</span><span style="color:#1f2328">;</span> i <span style="color:#0550ae">&lt;</span> MAX_SAT<span style="color:#1f2328">;</span> i<span style="color:#0550ae">++</span><span style="color:#1f2328">)</span> <span style="color:#1f2328">{</span>
+</span></span><span style="display:flex;"><span>        <span style="color:#cf222e">if</span><span style="color:#1f2328">(</span>obs<span style="color:#1f2328">[</span>i<span style="color:#1f2328">].</span>valid<span style="color:#1f2328">)</span> <span style="color:#1f2328">{</span>
+</span></span><span style="display:flex;"><span>            <span style="color:#6639ba">calc_elevation_azimuth</span><span style="color:#1f2328">(</span><span style="color:#0550ae">&amp;</span>obs<span style="color:#1f2328">[</span>i<span style="color:#1f2328">],</span> <span style="color:#0550ae">&amp;</span>elevation<span style="color:#1f2328">[</span>i<span style="color:#1f2328">],</span> <span style="color:#0550ae">&amp;</span>azimuth<span style="color:#1f2328">[</span>i<span style="color:#1f2328">]);</span>
+</span></span><span style="display:flex;"><span>            
+</span></span><span style="display:flex;"><span>            <span style="color:#cf222e">if</span><span style="color:#1f2328">(</span>elevation<span style="color:#1f2328">[</span>i<span style="color:#1f2328">]</span> <span style="color:#0550ae">&gt;</span> ELEVATION_MASK<span style="color:#1f2328">)</span> <span style="color:#1f2328">{</span>
+</span></span><span style="display:flex;"><span>                selected<span style="color:#1f2328">[</span>count<span style="color:#0550ae">++</span><span style="color:#1f2328">]</span> <span style="color:#0550ae">=</span> i<span style="color:#1f2328">;</span>
+</span></span><span style="display:flex;"><span>            <span style="color:#1f2328">}</span>
+</span></span><span style="display:flex;"><span>        <span style="color:#1f2328">}</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#1f2328">}</span>
+</span></span><span style="display:flex;"><span>    
+</span></span><span style="display:flex;"><span>    <span style="color:#57606a">// GDOP를 고려한 최적 위성 조합 선택
+</span></span></span><span style="display:flex;"><span><span style="color:#57606a"></span>    <span style="color:#cf222e">return</span> <span style="color:#6639ba">optimize_satellite_geometry</span><span style="color:#1f2328">(</span>selected<span style="color:#1f2328">,</span> count<span style="color:#1f2328">,</span> max_sat<span style="color:#1f2328">);</span>
+</span></span><span style="display:flex;"><span><span style="color:#1f2328">}</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><h3 id="2-사이클-슬립-탐지">2. 사이클 슬립 탐지</h3>
+<div class="highlight"><div style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">
+<table style="border-spacing:0;padding:0;margin:0;border:0;"><tr><td style="vertical-align:top;padding:0;margin:0;border:0;">
+<pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 1
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 2
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 3
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 4
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 5
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 6
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 7
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 8
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 9
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">10
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">11
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">12
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">13
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">14
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">15
+</span></code></pre></td>
+<td style="vertical-align:top;padding:0;margin:0;border:0;;width:100%">
+<pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c" data-lang="c"><span style="display:flex;"><span><span style="color:#cf222e">int</span> <span style="color:#6639ba">detect_cycle_slip</span><span style="color:#1f2328">(</span><span style="color:#cf222e">gnss_obs_t</span><span style="color:#0550ae">*</span> obs_prev<span style="color:#1f2328">,</span> <span style="color:#cf222e">gnss_obs_t</span><span style="color:#0550ae">*</span> obs_curr<span style="color:#1f2328">,</span> <span style="color:#cf222e">int</span> sat<span style="color:#1f2328">)</span> <span style="color:#1f2328">{</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#cf222e">double</span> dt <span style="color:#0550ae">=</span> obs_curr<span style="color:#0550ae">-&gt;</span>time <span style="color:#0550ae">-</span> obs_prev<span style="color:#0550ae">-&gt;</span>time<span style="color:#1f2328">;</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#cf222e">double</span> phase_diff <span style="color:#0550ae">=</span> obs_curr<span style="color:#0550ae">-&gt;</span>L<span style="color:#1f2328">[</span><span style="color:#0550ae">0</span><span style="color:#1f2328">]</span> <span style="color:#0550ae">-</span> obs_prev<span style="color:#0550ae">-&gt;</span>L<span style="color:#1f2328">[</span><span style="color:#0550ae">0</span><span style="color:#1f2328">];</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#cf222e">double</span> code_diff <span style="color:#0550ae">=</span> obs_curr<span style="color:#0550ae">-&gt;</span>P<span style="color:#1f2328">[</span><span style="color:#0550ae">0</span><span style="color:#1f2328">]</span> <span style="color:#0550ae">-</span> obs_prev<span style="color:#0550ae">-&gt;</span>P<span style="color:#1f2328">[</span><span style="color:#0550ae">0</span><span style="color:#1f2328">];</span>
+</span></span><span style="display:flex;"><span>    
+</span></span><span style="display:flex;"><span>    <span style="color:#57606a">// GF(Geometry-Free) 조합 사용
+</span></span></span><span style="display:flex;"><span><span style="color:#57606a"></span>    <span style="color:#cf222e">double</span> gf_diff <span style="color:#0550ae">=</span> <span style="color:#1f2328">(</span>obs_curr<span style="color:#0550ae">-&gt;</span>L<span style="color:#1f2328">[</span><span style="color:#0550ae">0</span><span style="color:#1f2328">]</span> <span style="color:#0550ae">-</span> obs_curr<span style="color:#0550ae">-&gt;</span>L<span style="color:#1f2328">[</span><span style="color:#0550ae">1</span><span style="color:#1f2328">])</span> <span style="color:#0550ae">-</span> 
+</span></span><span style="display:flex;"><span>                     <span style="color:#1f2328">(</span>obs_prev<span style="color:#0550ae">-&gt;</span>L<span style="color:#1f2328">[</span><span style="color:#0550ae">0</span><span style="color:#1f2328">]</span> <span style="color:#0550ae">-</span> obs_prev<span style="color:#0550ae">-&gt;</span>L<span style="color:#1f2328">[</span><span style="color:#0550ae">1</span><span style="color:#1f2328">]);</span>
+</span></span><span style="display:flex;"><span>    
+</span></span><span style="display:flex;"><span>    <span style="color:#cf222e">if</span><span style="color:#1f2328">(</span><span style="color:#6639ba">fabs</span><span style="color:#1f2328">(</span>gf_diff<span style="color:#1f2328">)</span> <span style="color:#0550ae">&gt;</span> CYCLE_SLIP_THRESHOLD<span style="color:#1f2328">)</span> <span style="color:#1f2328">{</span>
+</span></span><span style="display:flex;"><span>        <span style="color:#cf222e">return</span> <span style="color:#0550ae">1</span><span style="color:#1f2328">;</span> <span style="color:#57606a">// 사이클 슬립 검출
+</span></span></span><span style="display:flex;"><span><span style="color:#57606a"></span>    <span style="color:#1f2328">}</span>
+</span></span><span style="display:flex;"><span>    
+</span></span><span style="display:flex;"><span>    <span style="color:#cf222e">return</span> <span style="color:#0550ae">0</span><span style="color:#1f2328">;</span>
+</span></span><span style="display:flex;"><span><span style="color:#1f2328">}</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><h2 id="-정확도-검증-및-품질-관리">◆ 정확도 검증 및 품질 관리</h2>
+<h3 id="성능-지표">성능 지표</h3>
+<div class="highlight"><div style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">
+<table style="border-spacing:0;padding:0;margin:0;border:0;"><tr><td style="vertical-align:top;padding:0;margin:0;border:0;">
+<pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 1
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 2
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 3
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 4
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 5
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 6
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 7
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 8
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 9
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">10
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">11
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">12
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">13
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">14
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">15
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">16
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">17
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">18
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">19
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">20
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">21
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">22
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">23
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">24
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">25
+</span><span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">26
+</span></code></pre></td>
+<td style="vertical-align:top;padding:0;margin:0;border:0;;width:100%">
+<pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c" data-lang="c"><span style="display:flex;"><span><span style="color:#cf222e">typedef</span> <span style="color:#cf222e">struct</span> <span style="color:#1f2328">{</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#cf222e">double</span> horizontal_accuracy<span style="color:#1f2328">;</span>  <span style="color:#57606a">// 수평 정확도 (m)
+</span></span></span><span style="display:flex;"><span><span style="color:#57606a"></span>    <span style="color:#cf222e">double</span> vertical_accuracy<span style="color:#1f2328">;</span>    <span style="color:#57606a">// 수직 정확도 (m)  
+</span></span></span><span style="display:flex;"><span><span style="color:#57606a"></span>    <span style="color:#cf222e">double</span> precision<span style="color:#1f2328">;</span>           <span style="color:#57606a">// 정밀도 (m)
+</span></span></span><span style="display:flex;"><span><span style="color:#57606a"></span>    <span style="color:#cf222e">int</span> fix_ratio<span style="color:#1f2328">;</span>             <span style="color:#57606a">// Fixed 해 비율 (%)
+</span></span></span><span style="display:flex;"><span><span style="color:#57606a"></span>    <span style="color:#cf222e">double</span> initialization_time<span style="color:#1f2328">;</span> <span style="color:#57606a">// 초기화 시간 (s)
+</span></span></span><span style="display:flex;"><span><span style="color:#57606a"></span><span style="color:#1f2328">}</span> <span style="color:#cf222e">rtk_performance_t</span><span style="color:#1f2328">;</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#cf222e">void</span> <span style="color:#6639ba">evaluate_rtk_performance</span><span style="color:#1f2328">(</span><span style="color:#cf222e">rtk_solution_t</span><span style="color:#0550ae">*</span> solutions<span style="color:#1f2328">,</span> <span style="color:#cf222e">int</span> count<span style="color:#1f2328">,</span>
+</span></span><span style="display:flex;"><span>                             <span style="color:#cf222e">rtk_performance_t</span><span style="color:#0550ae">*</span> perf<span style="color:#1f2328">)</span> <span style="color:#1f2328">{</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#cf222e">double</span> sum_h <span style="color:#0550ae">=</span> <span style="color:#0550ae">0</span><span style="color:#1f2328">,</span> sum_v <span style="color:#0550ae">=</span> <span style="color:#0550ae">0</span><span style="color:#1f2328">;</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#cf222e">int</span> fixed_count <span style="color:#0550ae">=</span> <span style="color:#0550ae">0</span><span style="color:#1f2328">;</span>
+</span></span><span style="display:flex;"><span>    
+</span></span><span style="display:flex;"><span>    <span style="color:#cf222e">for</span><span style="color:#1f2328">(</span><span style="color:#cf222e">int</span> i <span style="color:#0550ae">=</span> <span style="color:#0550ae">0</span><span style="color:#1f2328">;</span> i <span style="color:#0550ae">&lt;</span> count<span style="color:#1f2328">;</span> i<span style="color:#0550ae">++</span><span style="color:#1f2328">)</span> <span style="color:#1f2328">{</span>
+</span></span><span style="display:flex;"><span>        sum_h <span style="color:#0550ae">+=</span> solutions<span style="color:#1f2328">[</span>i<span style="color:#1f2328">].</span>std_horizontal<span style="color:#1f2328">;</span>
+</span></span><span style="display:flex;"><span>        sum_v <span style="color:#0550ae">+=</span> solutions<span style="color:#1f2328">[</span>i<span style="color:#1f2328">].</span>std_vertical<span style="color:#1f2328">;</span>
+</span></span><span style="display:flex;"><span>        
+</span></span><span style="display:flex;"><span>        <span style="color:#cf222e">if</span><span style="color:#1f2328">(</span>solutions<span style="color:#1f2328">[</span>i<span style="color:#1f2328">].</span>fix_type <span style="color:#0550ae">==</span> RTK_FIXED<span style="color:#1f2328">)</span> <span style="color:#1f2328">{</span>
+</span></span><span style="display:flex;"><span>            fixed_count<span style="color:#0550ae">++</span><span style="color:#1f2328">;</span>
+</span></span><span style="display:flex;"><span>        <span style="color:#1f2328">}</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#1f2328">}</span>
+</span></span><span style="display:flex;"><span>    
+</span></span><span style="display:flex;"><span>    perf<span style="color:#0550ae">-&gt;</span>horizontal_accuracy <span style="color:#0550ae">=</span> sum_h <span style="color:#0550ae">/</span> count<span style="color:#1f2328">;</span>
+</span></span><span style="display:flex;"><span>    perf<span style="color:#0550ae">-&gt;</span>vertical_accuracy <span style="color:#0550ae">=</span> sum_v <span style="color:#0550ae">/</span> count<span style="color:#1f2328">;</span>
+</span></span><span style="display:flex;"><span>    perf<span style="color:#0550ae">-&gt;</span>fix_ratio <span style="color:#0550ae">=</span> <span style="color:#1f2328">(</span>fixed_count <span style="color:#0550ae">*</span> <span style="color:#0550ae">100</span><span style="color:#1f2328">)</span> <span style="color:#0550ae">/</span> count<span style="color:#1f2328">;</span>
+</span></span><span style="display:flex;"><span><span style="color:#1f2328">}</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><h2 id="-실제-응용-사례">◆ 실제 응용 사례</h2>
+<h3 id="1-농업용-자동화-트랙터">1. 농업용 자동화 트랙터</h3>
+<ul>
+<li><strong>요구 정확도</strong>: 2-5cm</li>
+<li><strong>특수 요구사항</strong>: 긴 기선거리, 장애물 환경</li>
+</ul>
+<h3 id="2-건설-장비-제어">2. 건설 장비 제어</h3>
+<ul>
+<li><strong>요구 정확도</strong>: 1-3cm</li>
+<li><strong>특수 요구사항</strong>: 실시간 처리, 고신뢰성</li>
+</ul>
+<h3 id="3-무인-항공기uav">3. 무인 항공기(UAV)</h3>
+<ul>
+<li><strong>요구 정확도</strong>: 5-10cm</li>
+<li><strong>특수 요구사항</strong>: 빠른 초기화, 동적 환경</li>
+</ul>
+<h2 id="-문제-해결-및-디버깅">◆ 문제 해결 및 디버깅</h2>
+<h3 id="일반적인-문제들">일반적인 문제들</h3>
+<ol>
+<li>
+<p><strong>초기화 지연</strong></p>
+<ul>
+<li>원인: 불충분한 위성 수, 신호 품질 저하</li>
+<li>해결: 위성 마스크 조정, 다중 주파수 활용</li>
+</ul>
+</li>
+<li>
+<p><strong>Fixed 해 손실</strong></p>
+<ul>
+<li>원인: 다중경로, 사이클 슬립</li>
+<li>해결: 안테나 위치 조정, 품질 관리 강화</li>
+</ul>
+</li>
+<li>
+<p><strong>통신 지연</strong></p>
+<ul>
+<li>원인: 네트워크 지연, 데이터 손실</li>
+<li>해결: 버퍼링 전략, 압축 알고리즘</li>
+</ul>
+</li>
+</ol>
+<h2 id="-마무리">◆ 마무리</h2>
+<p>RTK GPS 시스템 구현은 복잡하지만, 단계별로 접근하면 충분히 구현 가능합니다.
+핵심은 정확한 알고리즘 구현과 철저한 테스트입니다.</p>
+<h3 id="추천-학습-자료">추천 학습 자료</h3>
+<ul>
+<li><strong>RTKLIB</strong>: 오픈소스 GNSS 라이브러리</li>
+<li><strong>IGS</strong>: 국제 GNSS 서비스 데이터</li>
+<li><strong>논문</strong>: &ldquo;GNSS 데이터 처리의 원리&rdquo; 관련 연구</li>
+</ul>
+<h3 id="다음-글-예고">다음 글 예고</h3>
+<ul>
+<li>다중 GNSS 시스템 통합 (GPS+GLONASS+Galileo)</li>
+<li>머신러닝을 활용한 GNSS 신호 품질 향상</li>
+</ul>
+<hr>
+<p><em>RTK 구현에 대한 더 구체적인 질문이나 경험을 공유하고 싶으시면 댓글로 남겨주세요!</em></p>
+<ul class="pa0">
+  
+   <li class="list di">
+     <a href="/tags/rtk/" class="link f5 grow br-pill ba ph3 pv2 mb2 dib black sans-serif no-underline">RTK</a>
+   </li>
+  
+   <li class="list di">
+     <a href="/tags/gps/" class="link f5 grow br-pill ba ph3 pv2 mb2 dib black sans-serif no-underline">GPS</a>
+   </li>
+  
+   <li class="list di">
+     <a href="/tags/gnss/" class="link f5 grow br-pill ba ph3 pv2 mb2 dib black sans-serif no-underline">GNSS</a>
+   </li>
+  
+   <li class="list di">
+     <a href="/tags/%EA%B3%A0%EC%A0%95%EB%B0%80%EC%B8%A1%EC%9C%84/" class="link f5 grow br-pill ba ph3 pv2 mb2 dib black sans-serif no-underline">고정밀측위</a>
+   </li>
+  
+   <li class="list di">
+     <a href="/tags/%EA%B5%AC%ED%98%84/" class="link f5 grow br-pill ba ph3 pv2 mb2 dib black sans-serif no-underline">구현</a>
+   </li>
+  
+</ul>
+<div class="mt6 instapaper_ignoref">
+      
+      
+      </div>
+    </div>
+
+    <aside class="w-30-l mt6-l">
+
+
+
+
+</aside>
+
+  </article>
+
+    </main>
+    <footer class="bg-black bottom-0 w-100 pa3" role="contentinfo">
+  <div class="flex justify-between">
+  <a class="f4 fw4 hover-white white-70 dn dib-ns pv2 ph3 no-underline" href="http://localhost:1313/" >
+    &copy;  Yongrae Jo - Blog 2025 
+  </a>
+    <div><div class="ananke-socials"></div>
+</div>
+  </div>
+</footer>
+
+  </body>
+</html>

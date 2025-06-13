@@ -1,1 +1,75 @@
-<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>Tags on Yongrae Jo - Blog</title><link>https://yongrae-jo.github.io/tags/</link><description>Recent content in Tags on Yongrae Jo - Blog</description><generator>Hugo</generator><language>ko-kr</language><lastBuildDate>Fri, 13 Jun 2025 10:00:00 +0900</lastBuildDate><atom:link href="https://yongrae-jo.github.io/tags/index.xml" rel="self" type="application/rss+xml"/><item><title>C언어</title><link>https://yongrae-jo.github.io/tags/c%EC%96%B8%EC%96%B4/</link><pubDate>Fri, 13 Jun 2025 10:00:00 +0900</pubDate><guid>https://yongrae-jo.github.io/tags/c%EC%96%B8%EC%96%B4/</guid><description/></item><item><title>GNSS</title><link>https://yongrae-jo.github.io/tags/gnss/</link><pubDate>Fri, 13 Jun 2025 10:00:00 +0900</pubDate><guid>https://yongrae-jo.github.io/tags/gnss/</guid><description/></item><item><title>GPS</title><link>https://yongrae-jo.github.io/tags/gps/</link><pubDate>Fri, 13 Jun 2025 10:00:00 +0900</pubDate><guid>https://yongrae-jo.github.io/tags/gps/</guid><description/></item><item><title>라이브러리</title><link>https://yongrae-jo.github.io/tags/%EB%9D%BC%EC%9D%B4%EB%B8%8C%EB%9F%AC%EB%A6%AC/</link><pubDate>Fri, 13 Jun 2025 10:00:00 +0900</pubDate><guid>https://yongrae-jo.github.io/tags/%EB%9D%BC%EC%9D%B4%EB%B8%8C%EB%9F%AC%EB%A6%AC/</guid><description/></item><item><title>기초이론</title><link>https://yongrae-jo.github.io/tags/%EA%B8%B0%EC%B4%88%EC%9D%B4%EB%A1%A0/</link><pubDate>Thu, 12 Jun 2025 15:30:00 +0900</pubDate><guid>https://yongrae-jo.github.io/tags/%EA%B8%B0%EC%B4%88%EC%9D%B4%EB%A1%A0/</guid><description/></item><item><title>위성항법</title><link>https://yongrae-jo.github.io/tags/%EC%9C%84%EC%84%B1%ED%95%AD%EB%B2%95/</link><pubDate>Thu, 12 Jun 2025 15:30:00 +0900</pubDate><guid>https://yongrae-jo.github.io/tags/%EC%9C%84%EC%84%B1%ED%95%AD%EB%B2%95/</guid><description/></item><item><title>RTK</title><link>https://yongrae-jo.github.io/tags/rtk/</link><pubDate>Wed, 11 Jun 2025 09:15:00 +0900</pubDate><guid>https://yongrae-jo.github.io/tags/rtk/</guid><description/></item><item><title>고정밀측위</title><link>https://yongrae-jo.github.io/tags/%EA%B3%A0%EC%A0%95%EB%B0%80%EC%B8%A1%EC%9C%84/</link><pubDate>Wed, 11 Jun 2025 09:15:00 +0900</pubDate><guid>https://yongrae-jo.github.io/tags/%EA%B3%A0%EC%A0%95%EB%B0%80%EC%B8%A1%EC%9C%84/</guid><description/></item><item><title>구현</title><link>https://yongrae-jo.github.io/tags/%EA%B5%AC%ED%98%84/</link><pubDate>Wed, 11 Jun 2025 09:15:00 +0900</pubDate><guid>https://yongrae-jo.github.io/tags/%EA%B5%AC%ED%98%84/</guid><description/></item></channel></rss>
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>Tags on Yongrae Jo - Blog</title>
+    <link>http://localhost:1313/tags/</link>
+    <description>Recent content in Tags on Yongrae Jo - Blog</description>
+    <generator>Hugo</generator>
+    <language>ko-kr</language>
+    <lastBuildDate>Fri, 13 Jun 2025 10:00:00 +0900</lastBuildDate>
+    <atom:link href="http://localhost:1313/tags/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>C언어</title>
+      <link>http://localhost:1313/tags/c%EC%96%B8%EC%96%B4/</link>
+      <pubDate>Fri, 13 Jun 2025 10:00:00 +0900</pubDate>
+      <guid>http://localhost:1313/tags/c%EC%96%B8%EC%96%B4/</guid>
+      <description></description>
+    </item>
+    <item>
+      <title>GNSS</title>
+      <link>http://localhost:1313/tags/gnss/</link>
+      <pubDate>Fri, 13 Jun 2025 10:00:00 +0900</pubDate>
+      <guid>http://localhost:1313/tags/gnss/</guid>
+      <description></description>
+    </item>
+    <item>
+      <title>GPS</title>
+      <link>http://localhost:1313/tags/gps/</link>
+      <pubDate>Fri, 13 Jun 2025 10:00:00 +0900</pubDate>
+      <guid>http://localhost:1313/tags/gps/</guid>
+      <description></description>
+    </item>
+    <item>
+      <title>라이브러리</title>
+      <link>http://localhost:1313/tags/%EB%9D%BC%EC%9D%B4%EB%B8%8C%EB%9F%AC%EB%A6%AC/</link>
+      <pubDate>Fri, 13 Jun 2025 10:00:00 +0900</pubDate>
+      <guid>http://localhost:1313/tags/%EB%9D%BC%EC%9D%B4%EB%B8%8C%EB%9F%AC%EB%A6%AC/</guid>
+      <description></description>
+    </item>
+    <item>
+      <title>기초이론</title>
+      <link>http://localhost:1313/tags/%EA%B8%B0%EC%B4%88%EC%9D%B4%EB%A1%A0/</link>
+      <pubDate>Thu, 12 Jun 2025 15:30:00 +0900</pubDate>
+      <guid>http://localhost:1313/tags/%EA%B8%B0%EC%B4%88%EC%9D%B4%EB%A1%A0/</guid>
+      <description></description>
+    </item>
+    <item>
+      <title>위성항법</title>
+      <link>http://localhost:1313/tags/%EC%9C%84%EC%84%B1%ED%95%AD%EB%B2%95/</link>
+      <pubDate>Thu, 12 Jun 2025 15:30:00 +0900</pubDate>
+      <guid>http://localhost:1313/tags/%EC%9C%84%EC%84%B1%ED%95%AD%EB%B2%95/</guid>
+      <description></description>
+    </item>
+    <item>
+      <title>RTK</title>
+      <link>http://localhost:1313/tags/rtk/</link>
+      <pubDate>Wed, 11 Jun 2025 09:15:00 +0900</pubDate>
+      <guid>http://localhost:1313/tags/rtk/</guid>
+      <description></description>
+    </item>
+    <item>
+      <title>고정밀측위</title>
+      <link>http://localhost:1313/tags/%EA%B3%A0%EC%A0%95%EB%B0%80%EC%B8%A1%EC%9C%84/</link>
+      <pubDate>Wed, 11 Jun 2025 09:15:00 +0900</pubDate>
+      <guid>http://localhost:1313/tags/%EA%B3%A0%EC%A0%95%EB%B0%80%EC%B8%A1%EC%9C%84/</guid>
+      <description></description>
+    </item>
+    <item>
+      <title>구현</title>
+      <link>http://localhost:1313/tags/%EA%B5%AC%ED%98%84/</link>
+      <pubDate>Wed, 11 Jun 2025 09:15:00 +0900</pubDate>
+      <guid>http://localhost:1313/tags/%EA%B5%AC%ED%98%84/</guid>
+      <description></description>
+    </item>
+  </channel>
+</rss>

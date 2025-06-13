@@ -1,139 +1,40 @@
-<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>Yongrae Jo - GNSS/GPS 기술 블로그 on Yongrae Jo - Blog</title><link>https://yongrae-jo.github.io/</link><description>Recent content in Yongrae Jo - GNSS/GPS 기술 블로그 on Yongrae Jo - Blog</description><generator>Hugo</generator><language>ko-kr</language><lastBuildDate>Fri, 13 Jun 2025 10:00:00 +0900</lastBuildDate><atom:link href="https://yongrae-jo.github.io/index.xml" rel="self" type="application/rss+xml"/><item><title>About</title><link>https://yongrae-jo.github.io/about/</link><pubDate>Fri, 13 Jun 2025 10:00:00 +0900</pubDate><guid>https://yongrae-jo.github.io/about/</guid><description>&lt;h1 id="about-me">About Me&lt;/h1>
-&lt;p>안녕하세요! 저는 &lt;strong>Yongrae Jo&lt;/strong>입니다.&lt;/p>
-&lt;h2 id="-소개">◆ 소개&lt;/h2>
-&lt;p>GNSS/GPS 기술과 위치 기반 서비스 개발에 관심이 많은 개발자입니다.
-이 블로그에서는 GNSS 기술, GPS 알고리즘, 그리고 관련 개발 경험들을 공유합니다.&lt;/p>
-&lt;h2 id="-관심-분야">◆ 관심 분야&lt;/h2>
-&lt;ul>
-&lt;li>&lt;strong>GNSS/GPS 기술&lt;/strong> - 위성 항법 시스템 연구 및 개발&lt;/li>
-&lt;li>&lt;strong>임베디드 시스템&lt;/strong> - 실시간 GPS 수신기 개발&lt;/li>
-&lt;li>&lt;strong>알고리즘 최적화&lt;/strong> - 위치 정확도 향상 기법&lt;/li>
-&lt;li>&lt;strong>C/C++ 프로그래밍&lt;/strong> - 시스템 레벨 개발&lt;/li>
-&lt;/ul>
-&lt;h2 id="-기술-스택">◆ 기술 스택&lt;/h2>
-&lt;h3 id="언어">언어&lt;/h3>
-&lt;ul>
-&lt;li>C/C++&lt;/li>
-&lt;li>Python&lt;/li>
-&lt;li>MATLAB&lt;/li>
-&lt;/ul>
-&lt;h3 id="도구-및-기술">도구 및 기술&lt;/h3>
-&lt;ul>
-&lt;li>Git/GitHub&lt;/li>
-&lt;li>Linux/Unix 시스템&lt;/li>
-&lt;li>RTKLIB&lt;/li>
-&lt;li>신호 처리&lt;/li>
-&lt;li>데이터 분석&lt;/li>
-&lt;/ul>
-&lt;h2 id="-연락처">◆ 연락처&lt;/h2>
-&lt;p>궁금한 점이나 협업 관련 문의가 있으시면 언제든 연락해주세요.&lt;/p></description></item><item><title>GNSS Utility Module (common.c)</title><link>https://yongrae-jo.github.io/posts/gnss-utility-module/</link><pubDate>Fri, 13 Jun 2025 10:00:00 +0900</pubDate><guid>https://yongrae-jo.github.io/posts/gnss-utility-module/</guid><description>&lt;h1 id="gnss-utility-module-commonc">GNSS Utility Module (common.c)&lt;/h1>
-&lt;p>GNSS 라이브러리의 다양한 유틸리티 함수들을 제공하는 기반 모듈입니다.&lt;/p>
-&lt;h2 id="-목차">▶ 목차&lt;/h2>
-&lt;ol>
-&lt;li>&lt;a href="#%EB%8D%B0%EC%9D%B4%ED%84%B0-%ED%83%80%EC%9E%85-%EA%B5%AC%EC%A1%B0">데이터 타입 구조&lt;/a>&lt;/li>
-&lt;li>&lt;a href="#%ED%95%A8%EC%88%98-%EA%B5%AC%EC%A1%B0">함수 구조&lt;/a>&lt;/li>
-&lt;li>&lt;a href="#%EC%82%AC%EC%9A%A9-%EC%98%88%EC%8B%9C">사용 예시&lt;/a>&lt;/li>
-&lt;li>&lt;a href="#%EB%8D%B0%EC%9D%B4%ED%84%B0-%ED%83%80%EC%9E%85-%EB%AA%A9%EB%A1%9D">데이터 타입 목록&lt;/a>&lt;/li>
-&lt;li>&lt;a href="#%ED%95%A8%EC%88%98-%EB%AA%A9%EB%A1%9D">함수 목록&lt;/a>&lt;/li>
-&lt;/ol>
-&lt;hr>
-&lt;h2 id="-데이터-타입-구조">◆ 데이터 타입 구조&lt;/h2>
-&lt;p>GNSS 모듈에서 사용되는 기본 데이터 타입들을 정의합니다.&lt;/p>
-&lt;h3 id="기본-타입-정의">기본 타입 정의&lt;/h3>
-&lt;div class="highlight">&lt;div style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">
-&lt;table style="border-spacing:0;padding:0;margin:0;border:0;">&lt;tr>&lt;td style="vertical-align:top;padding:0;margin:0;border:0;">
-&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code>&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">1
-&lt;/span>&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">2
-&lt;/span>&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">3
-&lt;/span>&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">4
-&lt;/span>&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">5
-&lt;/span>&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">6
-&lt;/span>&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">7
-&lt;/span>&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">8
-&lt;/span>&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">9
-&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
-&lt;td style="vertical-align:top;padding:0;margin:0;border:0;;width:100%">
-&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-c" data-lang="c">&lt;span style="display:flex;">&lt;span>&lt;span style="color:#cf222e">typedef&lt;/span> &lt;span style="color:#cf222e">struct&lt;/span> &lt;span style="color:#1f2328">{&lt;/span>
-&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#cf222e">double&lt;/span> lat&lt;span style="color:#1f2328">;&lt;/span> &lt;span style="color:#57606a">// 위도 (degrees)
-&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#57606a">&lt;/span> &lt;span style="color:#cf222e">double&lt;/span> lon&lt;span style="color:#1f2328">;&lt;/span> &lt;span style="color:#57606a">// 경도 (degrees)
-&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#57606a">&lt;/span> &lt;span style="color:#cf222e">double&lt;/span> alt&lt;span style="color:#1f2328">;&lt;/span> &lt;span style="color:#57606a">// 고도 (meters)
-&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#57606a">&lt;/span>&lt;span style="color:#1f2328">}&lt;/span> &lt;span style="color:#cf222e">gnss_position_t&lt;/span>&lt;span style="color:#1f2328">;&lt;/span>
-&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
-&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#cf222e">typedef&lt;/span> &lt;span style="color:#cf222e">struct&lt;/span> &lt;span style="color:#1f2328">{&lt;/span>
-&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#cf222e">double&lt;/span> x&lt;span style="color:#1f2328">,&lt;/span> y&lt;span style="color:#1f2328">,&lt;/span> z&lt;span style="color:#1f2328">;&lt;/span> &lt;span style="color:#57606a">// ECEF 좌표계 (meters)
-&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#57606a">&lt;/span>&lt;span style="color:#1f2328">}&lt;/span> &lt;span style="color:#cf222e">gnss_ecef_t&lt;/span>&lt;span style="color:#1f2328">;&lt;/span>
-&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
-&lt;/div>
-&lt;/div>&lt;h2 id="-함수-구조">◆ 함수 구조&lt;/h2>
-&lt;p>주요 유틸리티 함수들의 구조와 용도에 대해 설명합니다.&lt;/p></description></item><item><title>GPS 기초 이론과 동작 원리</title><link>https://yongrae-jo.github.io/posts/gps-basics/</link><pubDate>Thu, 12 Jun 2025 15:30:00 +0900</pubDate><guid>https://yongrae-jo.github.io/posts/gps-basics/</guid><description>&lt;h1 id="gps-기초-이론과-동작-원리">GPS 기초 이론과 동작 원리&lt;/h1>
-&lt;p>GPS(Global Positioning System)는 현대 사회에서 필수적인 기술이 되었습니다.
-이번 포스트에서는 GPS의 기본 원리와 동작 방식에 대해 자세히 알아보겠습니다.&lt;/p>
-&lt;h2 id="-gps란-무엇인가">▶ GPS란 무엇인가?&lt;/h2>
-&lt;p>GPS는 미국에서 개발한 위성 기반 전역 항법 시스템으로, 지구 어디서든 정확한 위치, 속도, 시간 정보를 제공합니다.&lt;/p>
-&lt;h3 id="주요-특징">주요 특징&lt;/h3>
-&lt;ul>
-&lt;li>&lt;strong>전천후 서비스&lt;/strong>: 24시간 365일 서비스 제공&lt;/li>
-&lt;li>&lt;strong>전세계 커버리지&lt;/strong>: 지구 전체 영역에서 사용 가능&lt;/li>
-&lt;li>&lt;strong>높은 정확도&lt;/strong>: 일반적으로 3-5m 오차 범위&lt;/li>
-&lt;/ul>
-&lt;h2 id="-gps-시스템-구성">◆ GPS 시스템 구성&lt;/h2>
-&lt;p>GPS는 크게 세 가지 주요 부분으로 구성됩니다.&lt;/p></description></item><item><title>RTK GPS 시스템 구현 가이드</title><link>https://yongrae-jo.github.io/posts/rtk-implementation/</link><pubDate>Wed, 11 Jun 2025 09:15:00 +0900</pubDate><guid>https://yongrae-jo.github.io/posts/rtk-implementation/</guid><description>&lt;h1 id="rtk-gps-시스템-구현-가이드">RTK GPS 시스템 구현 가이드&lt;/h1>
-&lt;p>RTK(Real-Time Kinematic) GPS는 센티미터급 정확도를 제공하는 고정밀 측위 기술입니다.
-이번 포스트에서는 RTK 시스템의 구현 방법과 핵심 알고리즘에 대해 자세히 다뤄보겠습니다.&lt;/p>
-&lt;h2 id="-rtk란-무엇인가">▶ RTK란 무엇인가?&lt;/h2>
-&lt;p>RTK는 기준국(Base Station)과 이동국(Rover) 간의 반송파 위상 관측치를 실시간으로 차분하여
-센티미터급 정확도를 달성하는 고정밀 GNSS 측위 기법입니다.&lt;/p>
-&lt;h3 id="rtk의-장점">RTK의 장점&lt;/h3>
-&lt;ul>
-&lt;li>&lt;strong>높은 정확도&lt;/strong>: 수평 1-3cm, 수직 2-5cm&lt;/li>
-&lt;li>&lt;strong>실시간 처리&lt;/strong>: 초 단위 내 해 제공&lt;/li>
-&lt;li>&lt;strong>상대 측위&lt;/strong>: 기준국 대비 상대 위치 결정&lt;/li>
-&lt;/ul>
-&lt;h2 id="-rtk-시스템-구성">◆ RTK 시스템 구성&lt;/h2>
-&lt;h3 id="1-하드웨어-구성">1. 하드웨어 구성&lt;/h3>
-&lt;div class="highlight">&lt;div style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">
-&lt;table style="border-spacing:0;padding:0;margin:0;border:0;">&lt;tr>&lt;td style="vertical-align:top;padding:0;margin:0;border:0;">
-&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code>&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">1
-&lt;/span>&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">2
-&lt;/span>&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">3
-&lt;/span>&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">4
-&lt;/span>&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">5
-&lt;/span>&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">6
-&lt;/span>&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">7
-&lt;/span>&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">8
-&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
-&lt;td style="vertical-align:top;padding:0;margin:0;border:0;;width:100%">
-&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-text" data-lang="text">&lt;span style="display:flex;">&lt;span>┌─────────────┐ ┌─────────────┐
-&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>│ 기준국 │────▶│ 이동국 │
-&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>│ (Base) │ RTK │ (Rover) │
-&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>│ │보정 │ │
-&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>│ • GNSS 수신기│데이터│ • GNSS 수신기│
-&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>│ • 통신 장비 │ │ • 통신 장비 │
-&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>│ • 안테나 │ │ • 안테나 │
-&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>└─────────────┘ └─────────────┘
-&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
-&lt;/div>
-&lt;/div>&lt;h3 id="2-소프트웨어-구성">2. 소프트웨어 구성&lt;/h3>
-&lt;div class="highlight">&lt;div style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">
-&lt;table style="border-spacing:0;padding:0;margin:0;border:0;">&lt;tr>&lt;td style="vertical-align:top;padding:0;margin:0;border:0;">
-&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code>&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">1
-&lt;/span>&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">2
-&lt;/span>&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">3
-&lt;/span>&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">4
-&lt;/span>&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">5
-&lt;/span>&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">6
-&lt;/span>&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">7
-&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
-&lt;td style="vertical-align:top;padding:0;margin:0;border:0;;width:100%">
-&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-c" data-lang="c">&lt;span style="display:flex;">&lt;span>&lt;span style="color:#57606a">// RTK 시스템 주요 모듈
-&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#57606a">&lt;/span>&lt;span style="color:#cf222e">typedef&lt;/span> &lt;span style="color:#cf222e">struct&lt;/span> &lt;span style="color:#1f2328">{&lt;/span>
-&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#cf222e">gnss_obs_t&lt;/span> base_obs&lt;span style="color:#1f2328">[&lt;/span>MAX_SAT&lt;span style="color:#1f2328">];&lt;/span> &lt;span style="color:#57606a">// 기준국 관측치
-&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#57606a">&lt;/span> &lt;span style="color:#cf222e">gnss_obs_t&lt;/span> rover_obs&lt;span style="color:#1f2328">[&lt;/span>MAX_SAT&lt;span style="color:#1f2328">];&lt;/span> &lt;span style="color:#57606a">// 이동국 관측치
-&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#57606a">&lt;/span> &lt;span style="color:#cf222e">nav_t&lt;/span> navigation&lt;span style="color:#1f2328">;&lt;/span> &lt;span style="color:#57606a">// 항법 메시지
-&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#57606a">&lt;/span> &lt;span style="color:#cf222e">rtk_sol_t&lt;/span> solution&lt;span style="color:#1f2328">;&lt;/span> &lt;span style="color:#57606a">// RTK 해
-&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#57606a">&lt;/span>&lt;span style="color:#1f2328">}&lt;/span> &lt;span style="color:#cf222e">rtk_system_t&lt;/span>&lt;span style="color:#1f2328">;&lt;/span>
-&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
-&lt;/div>
-&lt;/div>&lt;h2 id="-rtk-알고리즘-구현">◆ RTK 알고리즘 구현&lt;/h2>
-&lt;h3 id="1-이중차분double-difference-계산">1. 이중차분(Double Difference) 계산&lt;/h3>
-&lt;p>RTK의 핵심은 이중차분 관측치를 통한 오차 제거입니다.&lt;/p></description></item></channel></rss>
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>Yongrae Jo - GNSS/GPS 기술 블로그 on Yongrae Jo - Blog</title>
+    <link>http://localhost:1313/</link>
+    <description>Recent content in Yongrae Jo - GNSS/GPS 기술 블로그 on Yongrae Jo - Blog</description>
+    <generator>Hugo</generator>
+    <language>ko-kr</language>
+    <lastBuildDate>Fri, 13 Jun 2025 10:00:00 +0900</lastBuildDate>
+    <atom:link href="http://localhost:1313/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>About</title>
+      <link>http://localhost:1313/about/</link>
+      <pubDate>Fri, 13 Jun 2025 10:00:00 +0900</pubDate>
+      <guid>http://localhost:1313/about/</guid>
+      <description>&lt;h1 id=&#34;about-me&#34;&gt;About Me&lt;/h1&gt;&#xA;&lt;p&gt;안녕하세요! 저는 &lt;strong&gt;Yongrae Jo&lt;/strong&gt;입니다.&lt;/p&gt;&#xA;&lt;h2 id=&#34;-소개&#34;&gt;◆ 소개&lt;/h2&gt;&#xA;&lt;p&gt;GNSS/GPS 기술과 위치 기반 서비스 개발에 관심이 많은 개발자입니다.&#xA;이 블로그에서는 GNSS 기술, GPS 알고리즘, 그리고 관련 개발 경험들을 공유합니다.&lt;/p&gt;&#xA;&lt;h2 id=&#34;-관심-분야&#34;&gt;◆ 관심 분야&lt;/h2&gt;&#xA;&lt;ul&gt;&#xA;&lt;li&gt;&lt;strong&gt;GNSS/GPS 기술&lt;/strong&gt; - 위성 항법 시스템 연구 및 개발&lt;/li&gt;&#xA;&lt;li&gt;&lt;strong&gt;임베디드 시스템&lt;/strong&gt; - 실시간 GPS 수신기 개발&lt;/li&gt;&#xA;&lt;li&gt;&lt;strong&gt;알고리즘 최적화&lt;/strong&gt; - 위치 정확도 향상 기법&lt;/li&gt;&#xA;&lt;li&gt;&lt;strong&gt;C/C++ 프로그래밍&lt;/strong&gt; - 시스템 레벨 개발&lt;/li&gt;&#xA;&lt;/ul&gt;&#xA;&lt;h2 id=&#34;-기술-스택&#34;&gt;◆ 기술 스택&lt;/h2&gt;&#xA;&lt;h3 id=&#34;언어&#34;&gt;언어&lt;/h3&gt;&#xA;&lt;ul&gt;&#xA;&lt;li&gt;C/C++&lt;/li&gt;&#xA;&lt;li&gt;Python&lt;/li&gt;&#xA;&lt;li&gt;MATLAB&lt;/li&gt;&#xA;&lt;/ul&gt;&#xA;&lt;h3 id=&#34;도구-및-기술&#34;&gt;도구 및 기술&lt;/h3&gt;&#xA;&lt;ul&gt;&#xA;&lt;li&gt;Git/GitHub&lt;/li&gt;&#xA;&lt;li&gt;Linux/Unix 시스템&lt;/li&gt;&#xA;&lt;li&gt;RTKLIB&lt;/li&gt;&#xA;&lt;li&gt;신호 처리&lt;/li&gt;&#xA;&lt;li&gt;데이터 분석&lt;/li&gt;&#xA;&lt;/ul&gt;&#xA;&lt;h2 id=&#34;-연락처&#34;&gt;◆ 연락처&lt;/h2&gt;&#xA;&lt;p&gt;궁금한 점이나 협업 관련 문의가 있으시면 언제든 연락해주세요.&lt;/p&gt;</description>
+    </item>
+    <item>
+      <title>GNSS Utility Module (common.c)</title>
+      <link>http://localhost:1313/posts/gnss-utility-module/</link>
+      <pubDate>Fri, 13 Jun 2025 10:00:00 +0900</pubDate>
+      <guid>http://localhost:1313/posts/gnss-utility-module/</guid>
+      <description>&lt;h1 id=&#34;gnss-utility-module-commonc&#34;&gt;GNSS Utility Module (common.c)&lt;/h1&gt;&#xA;&lt;p&gt;GNSS 라이브러리의 다양한 유틸리티 함수들을 제공하는 기반 모듈입니다.&lt;/p&gt;&#xA;&lt;h2 id=&#34;-목차&#34;&gt;▶ 목차&lt;/h2&gt;&#xA;&lt;ol&gt;&#xA;&lt;li&gt;&lt;a href=&#34;#%EB%8D%B0%EC%9D%B4%ED%84%B0-%ED%83%80%EC%9E%85-%EA%B5%AC%EC%A1%B0&#34;&gt;데이터 타입 구조&lt;/a&gt;&lt;/li&gt;&#xA;&lt;li&gt;&lt;a href=&#34;#%ED%95%A8%EC%88%98-%EA%B5%AC%EC%A1%B0&#34;&gt;함수 구조&lt;/a&gt;&lt;/li&gt;&#xA;&lt;li&gt;&lt;a href=&#34;#%EC%82%AC%EC%9A%A9-%EC%98%88%EC%8B%9C&#34;&gt;사용 예시&lt;/a&gt;&lt;/li&gt;&#xA;&lt;li&gt;&lt;a href=&#34;#%EB%8D%B0%EC%9D%B4%ED%84%B0-%ED%83%80%EC%9E%85-%EB%AA%A9%EB%A1%9D&#34;&gt;데이터 타입 목록&lt;/a&gt;&lt;/li&gt;&#xA;&lt;li&gt;&lt;a href=&#34;#%ED%95%A8%EC%88%98-%EB%AA%A9%EB%A1%9D&#34;&gt;함수 목록&lt;/a&gt;&lt;/li&gt;&#xA;&lt;/ol&gt;&#xA;&lt;hr&gt;&#xA;&lt;h2 id=&#34;-데이터-타입-구조&#34;&gt;◆ 데이터 타입 구조&lt;/h2&gt;&#xA;&lt;p&gt;GNSS 모듈에서 사용되는 기본 데이터 타입들을 정의합니다.&lt;/p&gt;&#xA;&lt;h3 id=&#34;기본-타입-정의&#34;&gt;기본 타입 정의&lt;/h3&gt;&#xA;&lt;div class=&#34;highlight&#34;&gt;&lt;div style=&#34;background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;&#34;&gt;&#xA;&lt;table style=&#34;border-spacing:0;padding:0;margin:0;border:0;&#34;&gt;&lt;tr&gt;&lt;td style=&#34;vertical-align:top;padding:0;margin:0;border:0;&#34;&gt;&#xA;&lt;pre tabindex=&#34;0&#34; style=&#34;background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;&#34;&gt;&lt;code&gt;&lt;span style=&#34;white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f&#34;&gt;1&#xA;&lt;/span&gt;&lt;span style=&#34;white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f&#34;&gt;2&#xA;&lt;/span&gt;&lt;span style=&#34;white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f&#34;&gt;3&#xA;&lt;/span&gt;&lt;span style=&#34;white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f&#34;&gt;4&#xA;&lt;/span&gt;&lt;span style=&#34;white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f&#34;&gt;5&#xA;&lt;/span&gt;&lt;span style=&#34;white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f&#34;&gt;6&#xA;&lt;/span&gt;&lt;span style=&#34;white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f&#34;&gt;7&#xA;&lt;/span&gt;&lt;span style=&#34;white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f&#34;&gt;8&#xA;&lt;/span&gt;&lt;span style=&#34;white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f&#34;&gt;9&#xA;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&#xA;&lt;td style=&#34;vertical-align:top;padding:0;margin:0;border:0;;width:100%&#34;&gt;&#xA;&lt;pre tabindex=&#34;0&#34; style=&#34;background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;&#34;&gt;&lt;code class=&#34;language-c&#34; data-lang=&#34;c&#34;&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;&lt;span style=&#34;color:#cf222e&#34;&gt;typedef&lt;/span&gt; &lt;span style=&#34;color:#cf222e&#34;&gt;struct&lt;/span&gt; &lt;span style=&#34;color:#1f2328&#34;&gt;{&lt;/span&gt;&#xA;&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;    &lt;span style=&#34;color:#cf222e&#34;&gt;double&lt;/span&gt; lat&lt;span style=&#34;color:#1f2328&#34;&gt;;&lt;/span&gt;    &lt;span style=&#34;color:#57606a&#34;&gt;// 위도 (degrees)&#xA;&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;&lt;span style=&#34;color:#57606a&#34;&gt;&lt;/span&gt;    &lt;span style=&#34;color:#cf222e&#34;&gt;double&lt;/span&gt; lon&lt;span style=&#34;color:#1f2328&#34;&gt;;&lt;/span&gt;    &lt;span style=&#34;color:#57606a&#34;&gt;// 경도 (degrees)&#xA;&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;&lt;span style=&#34;color:#57606a&#34;&gt;&lt;/span&gt;    &lt;span style=&#34;color:#cf222e&#34;&gt;double&lt;/span&gt; alt&lt;span style=&#34;color:#1f2328&#34;&gt;;&lt;/span&gt;    &lt;span style=&#34;color:#57606a&#34;&gt;// 고도 (meters)&#xA;&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;&lt;span style=&#34;color:#57606a&#34;&gt;&lt;/span&gt;&lt;span style=&#34;color:#1f2328&#34;&gt;}&lt;/span&gt; &lt;span style=&#34;color:#cf222e&#34;&gt;gnss_position_t&lt;/span&gt;&lt;span style=&#34;color:#1f2328&#34;&gt;;&lt;/span&gt;&#xA;&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;&#xA;&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;&lt;span style=&#34;color:#cf222e&#34;&gt;typedef&lt;/span&gt; &lt;span style=&#34;color:#cf222e&#34;&gt;struct&lt;/span&gt; &lt;span style=&#34;color:#1f2328&#34;&gt;{&lt;/span&gt;&#xA;&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;    &lt;span style=&#34;color:#cf222e&#34;&gt;double&lt;/span&gt; x&lt;span style=&#34;color:#1f2328&#34;&gt;,&lt;/span&gt; y&lt;span style=&#34;color:#1f2328&#34;&gt;,&lt;/span&gt; z&lt;span style=&#34;color:#1f2328&#34;&gt;;&lt;/span&gt;    &lt;span style=&#34;color:#57606a&#34;&gt;// ECEF 좌표계 (meters)&#xA;&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;&lt;span style=&#34;color:#57606a&#34;&gt;&lt;/span&gt;&lt;span style=&#34;color:#1f2328&#34;&gt;}&lt;/span&gt; &lt;span style=&#34;color:#cf222e&#34;&gt;gnss_ecef_t&lt;/span&gt;&lt;span style=&#34;color:#1f2328&#34;&gt;;&lt;/span&gt;&#xA;&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;&#xA;&lt;/div&gt;&#xA;&lt;/div&gt;&lt;h2 id=&#34;-함수-구조&#34;&gt;◆ 함수 구조&lt;/h2&gt;&#xA;&lt;p&gt;주요 유틸리티 함수들의 구조와 용도에 대해 설명합니다.&lt;/p&gt;</description>
+    </item>
+    <item>
+      <title>GPS 기초 이론과 동작 원리</title>
+      <link>http://localhost:1313/posts/gps-basics/</link>
+      <pubDate>Thu, 12 Jun 2025 15:30:00 +0900</pubDate>
+      <guid>http://localhost:1313/posts/gps-basics/</guid>
+      <description>&lt;h1 id=&#34;gps-기초-이론과-동작-원리&#34;&gt;GPS 기초 이론과 동작 원리&lt;/h1&gt;&#xA;&lt;p&gt;GPS(Global Positioning System)는 현대 사회에서 필수적인 기술이 되었습니다.&#xA;이번 포스트에서는 GPS의 기본 원리와 동작 방식에 대해 자세히 알아보겠습니다.&lt;/p&gt;&#xA;&lt;h2 id=&#34;-gps란-무엇인가&#34;&gt;▶ GPS란 무엇인가?&lt;/h2&gt;&#xA;&lt;p&gt;GPS는 미국에서 개발한 위성 기반 전역 항법 시스템으로, 지구 어디서든 정확한 위치, 속도, 시간 정보를 제공합니다.&lt;/p&gt;&#xA;&lt;h3 id=&#34;주요-특징&#34;&gt;주요 특징&lt;/h3&gt;&#xA;&lt;ul&gt;&#xA;&lt;li&gt;&lt;strong&gt;전천후 서비스&lt;/strong&gt;: 24시간 365일 서비스 제공&lt;/li&gt;&#xA;&lt;li&gt;&lt;strong&gt;전세계 커버리지&lt;/strong&gt;: 지구 전체 영역에서 사용 가능&lt;/li&gt;&#xA;&lt;li&gt;&lt;strong&gt;높은 정확도&lt;/strong&gt;: 일반적으로 3-5m 오차 범위&lt;/li&gt;&#xA;&lt;/ul&gt;&#xA;&lt;h2 id=&#34;-gps-시스템-구성&#34;&gt;◆ GPS 시스템 구성&lt;/h2&gt;&#xA;&lt;p&gt;GPS는 크게 세 가지 주요 부분으로 구성됩니다.&lt;/p&gt;</description>
+    </item>
+    <item>
+      <title>RTK GPS 시스템 구현 가이드</title>
+      <link>http://localhost:1313/posts/rtk-implementation/</link>
+      <pubDate>Wed, 11 Jun 2025 09:15:00 +0900</pubDate>
+      <guid>http://localhost:1313/posts/rtk-implementation/</guid>
+      <description>&lt;h1 id=&#34;rtk-gps-시스템-구현-가이드&#34;&gt;RTK GPS 시스템 구현 가이드&lt;/h1&gt;&#xA;&lt;p&gt;RTK(Real-Time Kinematic) GPS는 센티미터급 정확도를 제공하는 고정밀 측위 기술입니다.&#xA;이번 포스트에서는 RTK 시스템의 구현 방법과 핵심 알고리즘에 대해 자세히 다뤄보겠습니다.&lt;/p&gt;&#xA;&lt;h2 id=&#34;-rtk란-무엇인가&#34;&gt;▶ RTK란 무엇인가?&lt;/h2&gt;&#xA;&lt;p&gt;RTK는 기준국(Base Station)과 이동국(Rover) 간의 반송파 위상 관측치를 실시간으로 차분하여&#xA;센티미터급 정확도를 달성하는 고정밀 GNSS 측위 기법입니다.&lt;/p&gt;&#xA;&lt;h3 id=&#34;rtk의-장점&#34;&gt;RTK의 장점&lt;/h3&gt;&#xA;&lt;ul&gt;&#xA;&lt;li&gt;&lt;strong&gt;높은 정확도&lt;/strong&gt;: 수평 1-3cm, 수직 2-5cm&lt;/li&gt;&#xA;&lt;li&gt;&lt;strong&gt;실시간 처리&lt;/strong&gt;: 초 단위 내 해 제공&lt;/li&gt;&#xA;&lt;li&gt;&lt;strong&gt;상대 측위&lt;/strong&gt;: 기준국 대비 상대 위치 결정&lt;/li&gt;&#xA;&lt;/ul&gt;&#xA;&lt;h2 id=&#34;-rtk-시스템-구성&#34;&gt;◆ RTK 시스템 구성&lt;/h2&gt;&#xA;&lt;h3 id=&#34;1-하드웨어-구성&#34;&gt;1. 하드웨어 구성&lt;/h3&gt;&#xA;&lt;div class=&#34;highlight&#34;&gt;&lt;div style=&#34;background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;&#34;&gt;&#xA;&lt;table style=&#34;border-spacing:0;padding:0;margin:0;border:0;&#34;&gt;&lt;tr&gt;&lt;td style=&#34;vertical-align:top;padding:0;margin:0;border:0;&#34;&gt;&#xA;&lt;pre tabindex=&#34;0&#34; style=&#34;background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;&#34;&gt;&lt;code&gt;&lt;span style=&#34;white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f&#34;&gt;1&#xA;&lt;/span&gt;&lt;span style=&#34;white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f&#34;&gt;2&#xA;&lt;/span&gt;&lt;span style=&#34;white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f&#34;&gt;3&#xA;&lt;/span&gt;&lt;span style=&#34;white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f&#34;&gt;4&#xA;&lt;/span&gt;&lt;span style=&#34;white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f&#34;&gt;5&#xA;&lt;/span&gt;&lt;span style=&#34;white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f&#34;&gt;6&#xA;&lt;/span&gt;&lt;span style=&#34;white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f&#34;&gt;7&#xA;&lt;/span&gt;&lt;span style=&#34;white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f&#34;&gt;8&#xA;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&#xA;&lt;td style=&#34;vertical-align:top;padding:0;margin:0;border:0;;width:100%&#34;&gt;&#xA;&lt;pre tabindex=&#34;0&#34; style=&#34;background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;&#34;&gt;&lt;code class=&#34;language-text&#34; data-lang=&#34;text&#34;&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;┌─────────────┐     ┌─────────────┐&#xA;&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;│ 기준국      │────▶│ 이동국      │&#xA;&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;│ (Base)      │ RTK │ (Rover)     │&#xA;&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;│             │보정 │             │&#xA;&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;│ • GNSS 수신기│데이터│ • GNSS 수신기│&#xA;&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;│ • 통신 장비 │     │ • 통신 장비 │&#xA;&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;│ • 안테나    │     │ • 안테나    │&#xA;&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;└─────────────┘     └─────────────┘&#xA;&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;&#xA;&lt;/div&gt;&#xA;&lt;/div&gt;&lt;h3 id=&#34;2-소프트웨어-구성&#34;&gt;2. 소프트웨어 구성&lt;/h3&gt;&#xA;&lt;div class=&#34;highlight&#34;&gt;&lt;div style=&#34;background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;&#34;&gt;&#xA;&lt;table style=&#34;border-spacing:0;padding:0;margin:0;border:0;&#34;&gt;&lt;tr&gt;&lt;td style=&#34;vertical-align:top;padding:0;margin:0;border:0;&#34;&gt;&#xA;&lt;pre tabindex=&#34;0&#34; style=&#34;background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;&#34;&gt;&lt;code&gt;&lt;span style=&#34;white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f&#34;&gt;1&#xA;&lt;/span&gt;&lt;span style=&#34;white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f&#34;&gt;2&#xA;&lt;/span&gt;&lt;span style=&#34;white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f&#34;&gt;3&#xA;&lt;/span&gt;&lt;span style=&#34;white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f&#34;&gt;4&#xA;&lt;/span&gt;&lt;span style=&#34;white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f&#34;&gt;5&#xA;&lt;/span&gt;&lt;span style=&#34;white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f&#34;&gt;6&#xA;&lt;/span&gt;&lt;span style=&#34;white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f&#34;&gt;7&#xA;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&#xA;&lt;td style=&#34;vertical-align:top;padding:0;margin:0;border:0;;width:100%&#34;&gt;&#xA;&lt;pre tabindex=&#34;0&#34; style=&#34;background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;&#34;&gt;&lt;code class=&#34;language-c&#34; data-lang=&#34;c&#34;&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;&lt;span style=&#34;color:#57606a&#34;&gt;// RTK 시스템 주요 모듈&#xA;&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;&lt;span style=&#34;color:#57606a&#34;&gt;&lt;/span&gt;&lt;span style=&#34;color:#cf222e&#34;&gt;typedef&lt;/span&gt; &lt;span style=&#34;color:#cf222e&#34;&gt;struct&lt;/span&gt; &lt;span style=&#34;color:#1f2328&#34;&gt;{&lt;/span&gt;&#xA;&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;    &lt;span style=&#34;color:#cf222e&#34;&gt;gnss_obs_t&lt;/span&gt; base_obs&lt;span style=&#34;color:#1f2328&#34;&gt;[&lt;/span&gt;MAX_SAT&lt;span style=&#34;color:#1f2328&#34;&gt;];&lt;/span&gt;     &lt;span style=&#34;color:#57606a&#34;&gt;// 기준국 관측치&#xA;&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;&lt;span style=&#34;color:#57606a&#34;&gt;&lt;/span&gt;    &lt;span style=&#34;color:#cf222e&#34;&gt;gnss_obs_t&lt;/span&gt; rover_obs&lt;span style=&#34;color:#1f2328&#34;&gt;[&lt;/span&gt;MAX_SAT&lt;span style=&#34;color:#1f2328&#34;&gt;];&lt;/span&gt;    &lt;span style=&#34;color:#57606a&#34;&gt;// 이동국 관측치&#xA;&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;&lt;span style=&#34;color:#57606a&#34;&gt;&lt;/span&gt;    &lt;span style=&#34;color:#cf222e&#34;&gt;nav_t&lt;/span&gt; navigation&lt;span style=&#34;color:#1f2328&#34;&gt;;&lt;/span&gt;                 &lt;span style=&#34;color:#57606a&#34;&gt;// 항법 메시지&#xA;&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;&lt;span style=&#34;color:#57606a&#34;&gt;&lt;/span&gt;    &lt;span style=&#34;color:#cf222e&#34;&gt;rtk_sol_t&lt;/span&gt; solution&lt;span style=&#34;color:#1f2328&#34;&gt;;&lt;/span&gt;              &lt;span style=&#34;color:#57606a&#34;&gt;// RTK 해&#xA;&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;&lt;span style=&#34;color:#57606a&#34;&gt;&lt;/span&gt;&lt;span style=&#34;color:#1f2328&#34;&gt;}&lt;/span&gt; &lt;span style=&#34;color:#cf222e&#34;&gt;rtk_system_t&lt;/span&gt;&lt;span style=&#34;color:#1f2328&#34;&gt;;&lt;/span&gt;&#xA;&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;&#xA;&lt;/div&gt;&#xA;&lt;/div&gt;&lt;h2 id=&#34;-rtk-알고리즘-구현&#34;&gt;◆ RTK 알고리즘 구현&lt;/h2&gt;&#xA;&lt;h3 id=&#34;1-이중차분double-difference-계산&#34;&gt;1. 이중차분(Double Difference) 계산&lt;/h3&gt;&#xA;&lt;p&gt;RTK의 핵심은 이중차분 관측치를 통한 오차 제거입니다.&lt;/p&gt;</description>
+    </item>
+  </channel>
+</rss>
