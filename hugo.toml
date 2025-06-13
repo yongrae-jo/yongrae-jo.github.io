@@ -1,0 +1,46 @@
+baseURL = 'https://yongrae-jo.github.io/'
+languageCode = 'ko-kr'
+title = 'Yongrae Jo - Blog'
+theme = 'ananke'
+
+# Site params
+[params]
+  author = "Yongrae Jo"
+  description = "GNSS/GPS 연구와 개발에 대한 기술 블로그입니다."
+  favicon = ""
+  site_logo = ""
+  text_color = ""
+  background_color_class = "bg-black"
+  recent_posts_number = 5
+  show_reading_time = true
+  copyright = "© 2025 Yongrae Jo"
+
+# Menu configuration
+[menu]
+  [[menu.main]]
+    identifier = "home"
+    name = "Home"
+    url = "/"
+    weight = 10
+
+  [[menu.main]]
+    identifier = "posts"
+    name = "Posts"
+    url = "/posts/"
+    weight = 20
+
+  [[menu.main]]
+    identifier = "about"
+    name = "About"
+    url = "/about/"
+    weight = 30
+
+# Markup configuration
+[markup]
+  [markup.goldmark]
+    [markup.goldmark.renderer]
+      unsafe = true
+  [markup.highlight]
+    style = "github"
+    lineNos = true
+    codeFences = true

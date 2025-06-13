@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>고급 on Yongrae Jo - Blog</title><link>https://yongrae-jo.github.io/categories/%EA%B3%A0%EA%B8%89/</link><description>Recent content in 고급 on Yongrae Jo - Blog</description><generator>Hugo</generator><language>ko-kr</language><lastBuildDate>Wed, 11 Jun 2025 09:15:00 +0900</lastBuildDate><atom:link href="https://yongrae-jo.github.io/categories/%EA%B3%A0%EA%B8%89/index.xml" rel="self" type="application/rss+xml"/><item><title>RTK GPS 시스템 구현 가이드</title><link>https://yongrae-jo.github.io/posts/rtk-implementation/</link><pubDate>Wed, 11 Jun 2025 09:15:00 +0900</pubDate><guid>https://yongrae-jo.github.io/posts/rtk-implementation/</guid><description>&lt;h1 id="rtk-gps-시스템-구현-가이드">RTK GPS 시스템 구현 가이드&lt;/h1>
+&lt;p>RTK(Real-Time Kinematic) GPS는 센티미터급 정확도를 제공하는 고정밀 측위 기술입니다.
+이번 포스트에서는 RTK 시스템의 구현 방법과 핵심 알고리즘에 대해 자세히 다뤄보겠습니다.&lt;/p>
+&lt;h2 id="-rtk란-무엇인가">▶ RTK란 무엇인가?&lt;/h2>
+&lt;p>RTK는 기준국(Base Station)과 이동국(Rover) 간의 반송파 위상 관측치를 실시간으로 차분하여
+센티미터급 정확도를 달성하는 고정밀 GNSS 측위 기법입니다.&lt;/p>
+&lt;h3 id="rtk의-장점">RTK의 장점&lt;/h3>
+&lt;ul>
+&lt;li>&lt;strong>높은 정확도&lt;/strong>: 수평 1-3cm, 수직 2-5cm&lt;/li>
+&lt;li>&lt;strong>실시간 처리&lt;/strong>: 초 단위 내 해 제공&lt;/li>
+&lt;li>&lt;strong>상대 측위&lt;/strong>: 기준국 대비 상대 위치 결정&lt;/li>
+&lt;/ul>
+&lt;h2 id="-rtk-시스템-구성">◆ RTK 시스템 구성&lt;/h2>
+&lt;h3 id="1-하드웨어-구성">1. 하드웨어 구성&lt;/h3>
+&lt;div class="highlight">&lt;div style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">
+&lt;table style="border-spacing:0;padding:0;margin:0;border:0;">&lt;tr>&lt;td style="vertical-align:top;padding:0;margin:0;border:0;">
+&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code>&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">1
+&lt;/span>&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">2
+&lt;/span>&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">3
+&lt;/span>&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">4
+&lt;/span>&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">5
+&lt;/span>&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">6
+&lt;/span>&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">7
+&lt;/span>&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">8
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td style="vertical-align:top;padding:0;margin:0;border:0;;width:100%">
+&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-text" data-lang="text">&lt;span style="display:flex;">&lt;span>┌─────────────┐ ┌─────────────┐
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>│ 기준국 │────▶│ 이동국 │
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>│ (Base) │ RTK │ (Rover) │
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>│ │보정 │ │
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>│ • GNSS 수신기│데이터│ • GNSS 수신기│
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>│ • 통신 장비 │ │ • 통신 장비 │
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>│ • 안테나 │ │ • 안테나 │
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>└─────────────┘ └─────────────┘
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>&lt;h3 id="2-소프트웨어-구성">2. 소프트웨어 구성&lt;/h3>
+&lt;div class="highlight">&lt;div style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">
+&lt;table style="border-spacing:0;padding:0;margin:0;border:0;">&lt;tr>&lt;td style="vertical-align:top;padding:0;margin:0;border:0;">
+&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code>&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">1
+&lt;/span>&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">2
+&lt;/span>&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">3
+&lt;/span>&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">4
+&lt;/span>&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">5
+&lt;/span>&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">6
+&lt;/span>&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">7
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td style="vertical-align:top;padding:0;margin:0;border:0;;width:100%">
+&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-c" data-lang="c">&lt;span style="display:flex;">&lt;span>&lt;span style="color:#57606a">// RTK 시스템 주요 모듈
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#57606a">&lt;/span>&lt;span style="color:#cf222e">typedef&lt;/span> &lt;span style="color:#cf222e">struct&lt;/span> &lt;span style="color:#1f2328">{&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#cf222e">gnss_obs_t&lt;/span> base_obs&lt;span style="color:#1f2328">[&lt;/span>MAX_SAT&lt;span style="color:#1f2328">];&lt;/span> &lt;span style="color:#57606a">// 기준국 관측치
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#57606a">&lt;/span> &lt;span style="color:#cf222e">gnss_obs_t&lt;/span> rover_obs&lt;span style="color:#1f2328">[&lt;/span>MAX_SAT&lt;span style="color:#1f2328">];&lt;/span> &lt;span style="color:#57606a">// 이동국 관측치
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#57606a">&lt;/span> &lt;span style="color:#cf222e">nav_t&lt;/span> navigation&lt;span style="color:#1f2328">;&lt;/span> &lt;span style="color:#57606a">// 항법 메시지
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#57606a">&lt;/span> &lt;span style="color:#cf222e">rtk_sol_t&lt;/span> solution&lt;span style="color:#1f2328">;&lt;/span> &lt;span style="color:#57606a">// RTK 해
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#57606a">&lt;/span>&lt;span style="color:#1f2328">}&lt;/span> &lt;span style="color:#cf222e">rtk_system_t&lt;/span>&lt;span style="color:#1f2328">;&lt;/span>
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>&lt;h2 id="-rtk-알고리즘-구현">◆ RTK 알고리즘 구현&lt;/h2>
+&lt;h3 id="1-이중차분double-difference-계산">1. 이중차분(Double Difference) 계산&lt;/h3>
+&lt;p>RTK의 핵심은 이중차분 관측치를 통한 오차 제거입니다.&lt;/p></description></item></channel></rss>

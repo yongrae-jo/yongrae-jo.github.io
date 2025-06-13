@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>라이브러리 on Yongrae Jo - Blog</title><link>https://yongrae-jo.github.io/tags/%EB%9D%BC%EC%9D%B4%EB%B8%8C%EB%9F%AC%EB%A6%AC/</link><description>Recent content in 라이브러리 on Yongrae Jo - Blog</description><generator>Hugo</generator><language>ko-kr</language><lastBuildDate>Fri, 13 Jun 2025 10:00:00 +0900</lastBuildDate><atom:link href="https://yongrae-jo.github.io/tags/%EB%9D%BC%EC%9D%B4%EB%B8%8C%EB%9F%AC%EB%A6%AC/index.xml" rel="self" type="application/rss+xml"/><item><title>GNSS Utility Module (common.c)</title><link>https://yongrae-jo.github.io/posts/gnss-utility-module/</link><pubDate>Fri, 13 Jun 2025 10:00:00 +0900</pubDate><guid>https://yongrae-jo.github.io/posts/gnss-utility-module/</guid><description>&lt;h1 id="gnss-utility-module-commonc">GNSS Utility Module (common.c)&lt;/h1>
+&lt;p>GNSS 라이브러리의 다양한 유틸리티 함수들을 제공하는 기반 모듈입니다.&lt;/p>
+&lt;h2 id="-목차">▶ 목차&lt;/h2>
+&lt;ol>
+&lt;li>&lt;a href="#%EB%8D%B0%EC%9D%B4%ED%84%B0-%ED%83%80%EC%9E%85-%EA%B5%AC%EC%A1%B0">데이터 타입 구조&lt;/a>&lt;/li>
+&lt;li>&lt;a href="#%ED%95%A8%EC%88%98-%EA%B5%AC%EC%A1%B0">함수 구조&lt;/a>&lt;/li>
+&lt;li>&lt;a href="#%EC%82%AC%EC%9A%A9-%EC%98%88%EC%8B%9C">사용 예시&lt;/a>&lt;/li>
+&lt;li>&lt;a href="#%EB%8D%B0%EC%9D%B4%ED%84%B0-%ED%83%80%EC%9E%85-%EB%AA%A9%EB%A1%9D">데이터 타입 목록&lt;/a>&lt;/li>
+&lt;li>&lt;a href="#%ED%95%A8%EC%88%98-%EB%AA%A9%EB%A1%9D">함수 목록&lt;/a>&lt;/li>
+&lt;/ol>
+&lt;hr>
+&lt;h2 id="-데이터-타입-구조">◆ 데이터 타입 구조&lt;/h2>
+&lt;p>GNSS 모듈에서 사용되는 기본 데이터 타입들을 정의합니다.&lt;/p>
+&lt;h3 id="기본-타입-정의">기본 타입 정의&lt;/h3>
+&lt;div class="highlight">&lt;div style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">
+&lt;table style="border-spacing:0;padding:0;margin:0;border:0;">&lt;tr>&lt;td style="vertical-align:top;padding:0;margin:0;border:0;">
+&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code>&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">1
+&lt;/span>&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">2
+&lt;/span>&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">3
+&lt;/span>&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">4
+&lt;/span>&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">5
+&lt;/span>&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">6
+&lt;/span>&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">7
+&lt;/span>&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">8
+&lt;/span>&lt;span style="white-space:pre;-webkit-user-select:none;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">9
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td style="vertical-align:top;padding:0;margin:0;border:0;;width:100%">
+&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-c" data-lang="c">&lt;span style="display:flex;">&lt;span>&lt;span style="color:#cf222e">typedef&lt;/span> &lt;span style="color:#cf222e">struct&lt;/span> &lt;span style="color:#1f2328">{&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#cf222e">double&lt;/span> lat&lt;span style="color:#1f2328">;&lt;/span> &lt;span style="color:#57606a">// 위도 (degrees)
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#57606a">&lt;/span> &lt;span style="color:#cf222e">double&lt;/span> lon&lt;span style="color:#1f2328">;&lt;/span> &lt;span style="color:#57606a">// 경도 (degrees)
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#57606a">&lt;/span> &lt;span style="color:#cf222e">double&lt;/span> alt&lt;span style="color:#1f2328">;&lt;/span> &lt;span style="color:#57606a">// 고도 (meters)
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#57606a">&lt;/span>&lt;span style="color:#1f2328">}&lt;/span> &lt;span style="color:#cf222e">gnss_position_t&lt;/span>&lt;span style="color:#1f2328">;&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#cf222e">typedef&lt;/span> &lt;span style="color:#cf222e">struct&lt;/span> &lt;span style="color:#1f2328">{&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#cf222e">double&lt;/span> x&lt;span style="color:#1f2328">,&lt;/span> y&lt;span style="color:#1f2328">,&lt;/span> z&lt;span style="color:#1f2328">;&lt;/span> &lt;span style="color:#57606a">// ECEF 좌표계 (meters)
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#57606a">&lt;/span>&lt;span style="color:#1f2328">}&lt;/span> &lt;span style="color:#cf222e">gnss_ecef_t&lt;/span>&lt;span style="color:#1f2328">;&lt;/span>
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>&lt;h2 id="-함수-구조">◆ 함수 구조&lt;/h2>
+&lt;p>주요 유틸리티 함수들의 구조와 용도에 대해 설명합니다.&lt;/p></description></item></channel></rss>

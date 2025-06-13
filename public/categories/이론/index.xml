@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>이론 on Yongrae Jo - Blog</title><link>https://yongrae-jo.github.io/categories/%EC%9D%B4%EB%A1%A0/</link><description>Recent content in 이론 on Yongrae Jo - Blog</description><generator>Hugo</generator><language>ko-kr</language><lastBuildDate>Thu, 12 Jun 2025 15:30:00 +0900</lastBuildDate><atom:link href="https://yongrae-jo.github.io/categories/%EC%9D%B4%EB%A1%A0/index.xml" rel="self" type="application/rss+xml"/><item><title>GPS 기초 이론과 동작 원리</title><link>https://yongrae-jo.github.io/posts/gps-basics/</link><pubDate>Thu, 12 Jun 2025 15:30:00 +0900</pubDate><guid>https://yongrae-jo.github.io/posts/gps-basics/</guid><description>&lt;h1 id="gps-기초-이론과-동작-원리">GPS 기초 이론과 동작 원리&lt;/h1>
+&lt;p>GPS(Global Positioning System)는 현대 사회에서 필수적인 기술이 되었습니다.
+이번 포스트에서는 GPS의 기본 원리와 동작 방식에 대해 자세히 알아보겠습니다.&lt;/p>
+&lt;h2 id="-gps란-무엇인가">▶ GPS란 무엇인가?&lt;/h2>
+&lt;p>GPS는 미국에서 개발한 위성 기반 전역 항법 시스템으로, 지구 어디서든 정확한 위치, 속도, 시간 정보를 제공합니다.&lt;/p>
+&lt;h3 id="주요-특징">주요 특징&lt;/h3>
+&lt;ul>
+&lt;li>&lt;strong>전천후 서비스&lt;/strong>: 24시간 365일 서비스 제공&lt;/li>
+&lt;li>&lt;strong>전세계 커버리지&lt;/strong>: 지구 전체 영역에서 사용 가능&lt;/li>
+&lt;li>&lt;strong>높은 정확도&lt;/strong>: 일반적으로 3-5m 오차 범위&lt;/li>
+&lt;/ul>
+&lt;h2 id="-gps-시스템-구성">◆ GPS 시스템 구성&lt;/h2>
+&lt;p>GPS는 크게 세 가지 주요 부분으로 구성됩니다.&lt;/p></description></item></channel></rss>
